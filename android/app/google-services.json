@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "406733622720",
+    "firebase_url": "https://todoapp-191d7.firebaseio.com",
+    "project_id": "todoapp-191d7",
+    "storage_bucket": "todoapp-191d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:406733622720:android:96b1631b44fd3f90dc8c25",
+        "android_client_info": {
+          "package_name": "de.ventech.todoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "406733622720-ubu903mpqtk7boing7vis2qkm81nqbiu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.ventech.todoapp",
+            "certificate_hash": "61b87927bdb6ff325597772a5912fd2a4f8a86f5"
+          }
+        },
+        {
+          "client_id": "406733622720-rbtbd537asou123l2vkv3hva914709r9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCG6slBX1Mb9-vzFIKxO9nlEcIEI__ZS60"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "406733622720-rbtbd537asou123l2vkv3hva914709r9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
