@@ -29,36 +29,38 @@ class SettingsScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.white,
         body: Container(
-          child: Column(
-            children: [
-              Container(
-                alignment: Alignment.centerLeft,
-                margin: EdgeInsets.fromLTRB(30, 20, 0, 12),
-                child: Text(
-                  'Konto'.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: EdgeInsets.fromLTRB(30, 20, 0, 12),
+                  child: Text(
+                    'Konto'.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                height: screenHeight * 0.5,
-                child: ScrollConfiguration(
-                  behavior: CustomScrollBehavior(),
-                  child: ListView(
-                    children: [
-                      UsernameItem(userData['uid']),
-                      if(userData['isSocial'] == false)
-                        EmailItem(userData['uid']),
-                      PasswordItem(userData['email']),
-                      LogoutItem(userData['uid']),
-                      DeleteAccountItem(userData['authMethod']),
-                    ],
+                Container(
+                  height: screenHeight * 0.5,
+                  child: ScrollConfiguration(
+                    behavior: CustomScrollBehavior(),
+                    child: ListView(
+                      children: [
+                        UsernameItem(userData['uid']),
+                        if(userData['authMethod'] == 'email')
+                          EmailItem(userData['uid']),
+                        PasswordItem(userData['email']),
+                        LogoutItem(userData['uid']),
+                        DeleteAccountItem(userData['authMethod']),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

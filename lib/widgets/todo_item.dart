@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class TodoItem extends StatelessWidget {
   final String id;
@@ -28,7 +29,9 @@ class TodoItem extends StatelessWidget {
         child: ListTile(
           dense: true,
           contentPadding: EdgeInsets.symmetric(vertical: 4),
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).pushNamed('/todo_details');
+          },
           leading: Checkbox(
             activeColor: Colors.lightBlue,
             value: done,
@@ -54,26 +57,43 @@ class TodoItem extends StatelessWidget {
               : null,
         ),
       ),
-    ) : Card(
-      key: key,
-      margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
-      elevation: 1,
-      child: ListTile(
-        key: ValueKey(id),
-        dense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 4),
-        onTap: () {},
-        leading: Checkbox(
-          activeColor: Colors.lightBlue,
-          value: done,
-          onChanged: (_) => toggleDone(),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            decoration: done ? TextDecoration.lineThrough : TextDecoration.none,
+    ) : GestureDetector(
+      onTap: () => Navigator.of(context).pushNamed('/todo_details'),
+      child: Container(
+        child: Card(
+          key: key,
+          margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
+          elevation: 1,
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pushNamed('/todo_details'),
+            child: Container(
+              child: ListTile(
+                key: ValueKey(id),
+                dense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 4),
+                onTap: () {
+                  Navigator.of(context).pushNamed('/todo_details');
+                },
+                leading: Checkbox( // TODO: Make the CheckBox round. https://stackoverflow.com/questions/52326268/how-to-create-a-round-checkbox-in-flutter-or-change-the-checkboxs-style-suc
+                  activeColor: Colors.lightBlue,
+                  value: done,
+                  onChanged: (_) => toggleDone(),
+                ),
+                title: GestureDetector(
+                  onTap: () => Navigator.of(context).pushNamed('/todo_details'),
+                  child: Container(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        decoration: done ? TextDecoration.lineThrough : TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
