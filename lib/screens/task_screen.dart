@@ -1,132 +1,62 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todoapp/models/todo.dart';
 import 'package:todoapp/models/user.dart';
-import '../widgets/sidebar/drawer.dart';
 import 'package:todoapp/widgets/todo_item.dart';
+import '../widgets/sidebar/drawer.dart';
 import 'package:todoapp/services/database_service.dart';
 
-class HomeScreen extends StatefulWidget {
+class TaskScreen extends StatefulWidget {
   final User user;
+  final String list;
 
-  HomeScreen(this.user);
+  TaskScreen(this.user, this.list);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _TaskScreenState createState() => _TaskScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  User user;
+class _TaskScreenState extends State<TaskScreen> {
   DatabaseService databaseService;
-  List<dynamic> todos = List<dynamic>();
-  List<dynamic> doneTodos = List<dynamic>();
+  Stream<QuerySnapshot> dataStream;
   TextEditingController _controller = TextEditingController();
   FocusNode inputField = FocusNode();
-
   bool activateBtn = false;
-  bool initializedData = false;
 
   @override
   void initState() {
     super.initState();
-    user = widget.user;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initializeData(user.userID).whenComplete(() {
-        print('Initialized Data From Backend Storage');
-        print(todos.toString());
-      });
-    });
-  }
-
-  Future<void> initializeData(String uid) async {
-    databaseService = DatabaseService(uid);
-    DocumentSnapshot userData = await databaseService.getUserData();
-    if(userData.data != null) {
-      user.username = userData.data['username'];
-    } else {
-      await initializeData(uid);
-    }
-    DocumentSnapshot snapshot = await databaseService.getTodos('all_tasks');
-    if(snapshot.data != null) {
-      todos = snapshot.data['todos'];
-      todos.forEach((todo) {
-        if(todo['value'] == true) {
-          doneTodos.add(todo);
-        }
-      });
-      setState(() => initializedData = true);
-    } else {
-      await initializeData(uid);
-    }
-  }
-
-  void delete(String id) {
-    setState(() {
-      todos.removeWhere((todo) => todo['id'] == id);
-      doneTodos.removeWhere((todo) => todo['id'] == id);
-    });
-    databaseService.updateTodos(todos);
+    databaseService = DatabaseService(widget.user.uid, list: widget.list);
+    dataStream = databaseService.getTodos();
   }
 
   void addTodo(String title) {
-    setState(() {
-      Todo todo = new Todo(title);
-      final map = {
-        'id': todo.id,
-        'title': todo.title,
-        'value': todo.done,
-        'createdAt': Timestamp.now(),
-      };
-      todos.insert(0, map);
-    });
-    databaseService.updateTodos(todos);
+    Todo todo = new Todo(title);
+    databaseService.addTodo(todo);
   }
 
-  void toggleDone(String id) {
-    var item;
-    var removeIndex;
-    var checked;
-    for (int i = 0; i < todos.length; i++) {
-      if (todos[i]['id'] == id) {
-        setState(() {
-          todos[i]['value'] = !todos[i]['value'];
-          if (!todos[i]['value'] == false) {
-            checked = true;
-            item = todos[i];
-            doneTodos.add(todos[i]);
-            removeIndex = i;
-          } else if (!todos[i]['value'] == true) {
-            checked = false;
-            doneTodos.removeWhere((element) => element['id'] == todos[i]['id']);
-            final temp = todos.removeAt(i);
-            todos.insert(0, temp);
-          }
-        });
-      }
-    }
-    setState(() {
-      if (checked) {
-        todos.removeAt(removeIndex);
-        print(todos.length);
-        print(doneTodos.length);
-        todos.insert((todos.length - doneTodos.length) + 1, item);
-      }
-    });
-    databaseService.updateTodos(todos);
+  void delete(String id) {
+    databaseService.deleteTodo(id);
+  }
+
+  void toggleDone(String id, bool value) {
+    databaseService.toggleDone(id, value);
   }
 
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.of(context).padding;
-    var screenHeight = MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight =
+        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
     var screenWidth = MediaQuery.of(context).size.width;
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black),
           title: Text(
-            'Alle Aufgaben'.toUpperCase(),
+            widget.list.toUpperCase(),
             style: TextStyle(
               color: Colors.black,
               fontSize: 17,
@@ -137,44 +67,43 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
         ),
-        drawer: Sidebar(user),
+        drawer: Sidebar(widget.user),
         drawerEnableOpenDragGesture: true,
         body: SingleChildScrollView(
           child: Column(children: [
-            initializedData
-                ? Container(
+            Container(
               height: screenHeight * 0.9,
-              color: Colors.white,
-              child: ReorderableListView(
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (newIndex > oldIndex) {
-                      newIndex -= 1;
-                    }
-                    final item = todos.removeAt(oldIndex);
-                    todos.insert(newIndex, item);
-                    databaseService.updateTodos(todos);
-                  });
-                },
-                children: [
-                  for (int i = 0; i < todos.length; i++)
-                    TodoItem(
-                      key: ValueKey(todos[i]['id']),
-                      id: todos[i]['id'],
-                      title: todos[i]['title'],
-                      delete: () => delete(todos[i]['id']),
-                      toggleDone: () => toggleDone(todos[i]['id']),
-                      done: todos[i]['value'],
+              child: StreamBuilder(
+                stream: dataStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting ||
+                      !snapshot.hasData) {
+                    return Container(
+                      child: Center(
+                        child: SpinKitFadingCircle(
+                          color: Colors.lightBlue,
+                          size: 44,
+                        ),
+                      ),
+                    );
+                  }
+                  List<DocumentSnapshot> todos = snapshot.data.documents;
+                  return Container(
+                    child: ListView.builder(
+                      itemCount: todos.length,
+                      itemBuilder: (context, index) {
+                        return TodoItem(
+                          key: ValueKey(todos[index].documentID),
+                          id: todos[index].documentID,
+                          title: todos[index]['title'],
+                          done: todos[index]['value'],
+                          delete: () => delete(todos[index].documentID),
+                          toggleDone: () => toggleDone(todos[index].documentID, todos[index]['value']),
+                        );
+                      },
                     ),
-                ],
-              ),
-            )
-                : Container(
-              height: screenHeight * 0.9,
-              color: Colors.white,
-              child: SpinKitFadingCircle(
-                color: Colors.lightBlue,
-                size: 44,
+                  );
+                },
               ),
             ),
             Container(
@@ -222,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 16,
                         ),
                         contentPadding:
-                        EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                            EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide(
@@ -246,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: EdgeInsets.only(left: 5),
                     child: CircleAvatar(
                       backgroundColor:
-                      activateBtn ? Colors.lightBlue : Colors.grey,
+                          activateBtn ? Colors.lightBlue : Colors.grey,
                       radius: 21,
                       child: Center(
                         child: IconButton(

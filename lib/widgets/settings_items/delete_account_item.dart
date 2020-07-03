@@ -79,7 +79,7 @@ class _DeleteAccountItemState extends State<DeleteAccountItem> {
             children: [
               Container(
                 child: Icon(
-                  Icons.delete_forever,
+                  Icons.delete,
                   color: Colors.red,
                 ),
                 margin: const EdgeInsets.only(left: 10.0),

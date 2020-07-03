@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 import '../screens/authenticate.dart';
-import '../screens/home_screen.dart';
+import '../screens/task_screen.dart';
 
 class Wrapper extends StatelessWidget {
   @override
@@ -12,7 +12,7 @@ class Wrapper extends StatelessWidget {
     if(user == null) {
       return Authenticate();
     } else {
-      return HomeScreen(user);
+      return TaskScreen(user, 'Alle Aufgaben');
     }
   }
 }
