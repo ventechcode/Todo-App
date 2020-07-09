@@ -3,7 +3,9 @@ import 'package:uuid/uuid.dart';
 class Todo {
   final String _id = new Uuid().v1();
   final String _title;
+  DateTime _dueDate;
   bool _value = false;
+  bool _priority = false;
 
   Todo(
     this._title,
@@ -21,7 +23,23 @@ class Todo {
     return _value;
   }
 
+  bool get priority {
+    return _priority;
+  }
+
+  DateTime get dueDate {
+    return _dueDate;
+  }
+
   void setValue(bool newValue) {
     this._value = newValue;
+  }
+
+  void setPriority(bool priority) {
+    this._priority = priority;
+  }
+
+  void setDueDate(DateTime date) {
+    this._dueDate = date;
   }
 }

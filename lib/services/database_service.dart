@@ -16,6 +16,8 @@ class DatabaseService {
       'title': todo.title,
       'value': todo.value,
       'createdAt': Timestamp.now(),
+      'priority': todo.priority,
+      'dueDate': todo.dueDate,
     });
   }
 
@@ -29,8 +31,20 @@ class DatabaseService {
     });
   }
 
-  Stream<QuerySnapshot> getTodos() {
-    return users.document(uid).collection(list).orderBy('value').snapshots();
+  Future togglePriority(String id, bool priority) async {
+    return await users.document(uid).collection(list).document(id).updateData({
+      'priority': priority,
+    });
+  }
+
+  Future updateDueDate(String id, DateTime dueDate) async {
+    return await users.document(uid).collection(list).document(id).updateData({
+      'dueDate': dueDate,
+    });
+  }
+
+  Stream<QuerySnapshot> getTodos({String orderBy}) {
+    return users.document(uid).collection(list).orderBy(orderBy).snapshots();
   }
 
   Future createUserDocument(String username) async {
@@ -71,6 +85,17 @@ class DatabaseService {
     return users.document(uid).snapshots();
   }
 
+  Stream<DocumentSnapshot> todoStream(String id) {
+    return users.document(uid).collection(list).document(id).snapshots();
+  }
+
+  Future updateTodoTitle(String id, String title) async {
+    return await users.document(uid).collection(list).document(id).updateData({
+      'title': title,
+    });
+  }
+
+  // User Methods
   Future updateUsername(String username) async {
     return await users.document(uid).updateData({
       'username': username,
