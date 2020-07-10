@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +18,7 @@ class TodoItem extends StatelessWidget {
   final Function toggleDone;
   final ValueKey key;
   final Timestamp dueDate;
+  final Timestamp reminderDate;
 
   TodoItem({
     this.id,
@@ -26,6 +30,7 @@ class TodoItem extends StatelessWidget {
     this.list,
     this.priority,
     this.dueDate,
+    this.reminderDate,
   });
 
   Future<String> getUid() async {
@@ -159,7 +164,7 @@ class TodoItem extends StatelessWidget {
                   ),
                 if (priority)
                   Container(
-                    margin: EdgeInsets.only(top: 2),
+                    margin: EdgeInsets.only(top: 3),
                     decoration: BoxDecoration(
                       color: Colors.amber,
                       borderRadius: BorderRadius.circular(20),
@@ -167,41 +172,86 @@ class TodoItem extends StatelessWidget {
                     height: 3.6,
                     width: 16,
                   ),
-                if(dueDate != null)
+                if(dueDate != null || reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                   Container(
-                    margin: EdgeInsets.fromLTRB(0, 2, 5, 0),
+                    margin: EdgeInsets.fromLTRB(0, 3, 5, 0),
                     height: 20,
                     width: screenWidth * 0.35,
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 13,
-                          color: dueDate.toDate().day == DateTime.now().day - 1 || dueDate.toDate().day < DateTime.now().day -1 ? Colors.red : Colors.grey[700],
-                        ),
-                        SizedBox(width: 3),
-                        Container(
-                          margin: EdgeInsets.only(top: 1),
-                          child: Text(
-                            _format.format(dueDate.toDate()) ==
-                                _format.format(DateTime.now())
-                                ? 'Heute'
-                                : dueDate
-                                .toDate()
-                                .day ==
-                                DateTime
-                                    .now()
-                                    .day + 1
-                                ? 'Morgen'
-                                : dueDate.toDate().day == DateTime.now().day - 1 ? 'Gestern' :_format
-                                .format(dueDate.toDate())
-                                .toString(),
-                            style: TextStyle(
-                              color: dueDate.toDate().day == DateTime.now().day - 1 || dueDate.toDate().day < DateTime.now().day -1 ? Colors.red : Colors.grey[700],
-                              fontSize: 12,
+                        if(dueDate != null)
+                          Icon(
+                            Icons.calendar_today,
+                            size: 13,
+                            color: dueDate.toDate().day == DateTime.now().day - 1 || dueDate.toDate().day < DateTime.now().day -1 ? Colors.red : Colors.grey[700],
+                          ),
+                        if(dueDate != null)
+                          SizedBox(width: 3),
+                        if(dueDate != null)
+                          Container(
+                            margin: EdgeInsets.only(top: 1),
+                            child: Text(
+                              _format.format(dueDate.toDate()) ==
+                                  _format.format(DateTime.now())
+                                  ? 'Heute'
+                                  : dueDate
+                                  .toDate()
+                                  .day ==
+                                  DateTime
+                                      .now()
+                                      .day + 1
+                                  ? 'Morgen'
+                                  : dueDate.toDate().day == DateTime.now().day - 1 ? 'Gestern' :_format
+                                  .format(dueDate.toDate())
+                                  .toString(),
+                              style: TextStyle(
+                                color: dueDate.toDate().day == DateTime.now().day - 1 || dueDate.toDate().day < DateTime.now().day -1 ? Colors.red : Colors.grey[700],
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                        ),
+                        if(dueDate != null && reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                          Container(
+                            margin: EdgeInsets.only(top: 1.7),
+                            child: Transform.scale(
+                              scale: 2,
+                              child: Image(
+                                image: AssetImage('assets/images/dot.png'),
+                              ),
+                            ),
+                          ),
+                        if(reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                          Container(
+                            margin: EdgeInsets.only(top: 1.6),
+                            child: Icon(
+                              Icons.notifications,
+                              size: 14,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        if(reminderDate != null && dueDate == null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                          Container(
+                            margin: EdgeInsets.fromLTRB(2, 1, 0, 0),
+                            child: Text(
+                              _format.format(reminderDate.toDate()) ==
+                                  _format.format(DateTime.now())
+                                  ? 'Heute'
+                                  : reminderDate
+                                  .toDate()
+                                  .day ==
+                                  DateTime
+                                      .now()
+                                      .day + 1
+                                  ? 'Morgen'
+                                  :_format
+                                  .format(reminderDate.toDate())
+                                  .toString(),
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

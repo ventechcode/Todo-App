@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:todoapp/models/todo.dart';
 
@@ -10,14 +11,18 @@ class DatabaseService {
   DatabaseService(this.uid, {this.list});
 
   final CollectionReference users = Firestore.instance.collection('users');
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   Future addTodo(Todo todo) async {
     return await users.document(uid).collection(list).document(todo.id).setData({
+      'id': todo.id,
       'title': todo.title,
       'value': todo.value,
       'createdAt': Timestamp.now(),
       'priority': todo.priority,
       'dueDate': todo.dueDate,
+      'reminderDate': todo.reminderDate,
+      'deviceToken': await _firebaseMessaging.getToken(),
     });
   }
 
@@ -40,6 +45,12 @@ class DatabaseService {
   Future updateDueDate(String id, DateTime dueDate) async {
     return await users.document(uid).collection(list).document(id).updateData({
       'dueDate': dueDate,
+    });
+  }
+
+  Future updateReminderDate(String id, DateTime reminderDate) async {
+    return await users.document(uid).collection(list).document(id).updateData({
+      'reminderDate': reminderDate,
     });
   }
 

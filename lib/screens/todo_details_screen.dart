@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/database_service.dart';
 import 'package:todoapp/widgets/todo_details/date_picker.dart';
+import 'package:todoapp/widgets/todo_details/reminder_picker.dart';
 import 'package:todoapp/widgets/todo_details/todo_title.dart';
 
 class TodoDetailsScreen extends StatelessWidget {
@@ -44,6 +44,11 @@ class TodoDetailsScreen extends StatelessWidget {
                         data['list'],
                         data['value'],
                         snapshot.data['priority'],
+                      ),
+                      ReminderPicker(
+                        todoID: data['id'],
+                        notificationDate: snapshot.data['reminderDate'],
+                        databaseService: DatabaseService(data['uid'], list: data['list']),
                       ),
                       CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
                     ],

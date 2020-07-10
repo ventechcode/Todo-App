@@ -4,6 +4,7 @@ class Todo {
   final String _id = new Uuid().v1();
   final String _title;
   DateTime _dueDate;
+  DateTime _reminderDate;
   bool _value = false;
   bool _priority = false;
 
@@ -31,6 +32,10 @@ class Todo {
     return _dueDate;
   }
 
+  DateTime get reminderDate {
+    return _reminderDate;
+  }
+
   void setValue(bool newValue) {
     this._value = newValue;
   }
@@ -41,5 +46,9 @@ class Todo {
 
   void setDueDate(DateTime date) {
     this._dueDate = date;
+  }
+
+  void setReminderDate(DateTime date) {
+    this._reminderDate = date;
   }
 }

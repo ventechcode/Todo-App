@@ -9,6 +9,9 @@
 .history
 .svn/
 
+# Backend related
+/functions/
+
 # IntelliJ related
 *.iml
 *.ipr

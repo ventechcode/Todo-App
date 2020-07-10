@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todoapp/models/todo.dart';
@@ -19,6 +20,7 @@ class TaskScreen extends StatefulWidget {
 }
 
 class _TaskScreenState extends State<TaskScreen> {
+  FirebaseMessaging _firebaseMessaging;
   DatabaseService databaseService;
   Stream<QuerySnapshot> dataStream;
   TextEditingController _controller = TextEditingController();
@@ -31,6 +33,55 @@ class _TaskScreenState extends State<TaskScreen> {
     inputField.unfocus();
     databaseService = DatabaseService(widget.user.uid, list: widget.list);
     dataStream = databaseService.getTodos(orderBy: 'value');
+    _firebaseMessaging = FirebaseMessaging();
+    _firebaseMessaging.requestNotificationPermissions();
+    _firebaseMessaging.configure(
+      onLaunch: (message) {
+        bool value;
+        if(message['data']['value'] == 'true') {
+          value = true;
+        } else if (message['data']['value'] == 'false') {
+          value = false;
+        }
+        Navigator.of(context).pushNamed('/todo_details', arguments: {
+          'id': message['data']['id'],
+          'value': value,
+          'uid': widget.user.uid,
+          'list': widget.list,
+        });
+        return;
+      },
+      onMessage: (message) {
+        bool value;
+        if(message['data']['value'] == 'true') {
+          value = true;
+        } else if (message['data']['value'] == 'false') {
+          value = false;
+        }
+        Navigator.of(context).pushNamed('/todo_details', arguments: {
+          'id': message['data']['id'],
+          'value': value,
+          'uid': widget.user.uid,
+          'list': widget.list,
+        });
+        return;
+      },
+      onResume: (message) {
+        bool value;
+        if(message['data']['value'] == 'true') {
+          value = true;
+        } else if (message['data']['value'] == 'false') {
+          value = false;
+        }
+        Navigator.of(context).pushNamed('/todo_details', arguments: {
+          'id': message['data']['id'],
+          'value':  value,
+          'uid': widget.user.uid,
+          'list': widget.list,
+        });
+        return;
+      },
+    );
   }
 
   void addTodo(String title) {
@@ -108,6 +159,7 @@ class _TaskScreenState extends State<TaskScreen> {
                               list: widget.list,
                               priority: todos[index]['priority'],
                               dueDate: todos[index]['dueDate'],
+                              reminderDate: todos[index]['reminderDate'],
                             );
                           },
                         ),

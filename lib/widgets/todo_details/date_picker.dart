@@ -45,7 +45,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     return Row(
       children: [
         Container(
-          margin: EdgeInsets.only(top: 16),
+          margin: EdgeInsets.only(top: 12),
           width: _dateTime != null ? screenWidth * 0.715 : screenWidth * 0.88,
           height: screenHeight * 0.09,
           color: Colors.grey[100],
@@ -116,7 +116,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
         ),
         if(_dateTime != null)
           Container(
-            margin: EdgeInsets.fromLTRB(0, 16, 0, 0),
+            margin: const EdgeInsets.only(top: 12),
             width:  screenWidth * 0.165,
             height: screenHeight * 0.09,
             color: Colors.grey[100],
