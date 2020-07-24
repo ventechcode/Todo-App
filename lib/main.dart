@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:todoapp/screens/notes_screen.dart';
 import 'package:todoapp/screens/settings_screen.dart';
 import 'package:todoapp/screens/todo_details_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -33,6 +34,13 @@ class MyApp extends StatelessWidget {
           '/': (_) => Wrapper(),
           '/settings': (_) => SettingsScreen(),
           '/todo_details': (_) => TodoDetailsScreen(),
+        },
+        onGenerateRoute: (settings) {
+          var routes = {
+            '/notes': (_) => NotesScreen(settings.arguments),
+          };
+          WidgetBuilder builder = routes[settings.name];
+          return MaterialPageRoute(builder: (ctx) => builder(ctx));
         },
       ),
     );

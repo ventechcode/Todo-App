@@ -7,6 +7,7 @@ class Todo {
   DateTime _reminderDate;
   bool _value = false;
   bool _priority = false;
+  String _notes = '';
 
   Todo(
     this._title,
@@ -36,8 +37,16 @@ class Todo {
     return _reminderDate;
   }
 
+  String get notes {
+    return _notes;
+  }
+
   void setValue(bool newValue) {
     this._value = newValue;
+  }
+
+  void setNotes(String notes) {
+    this._notes = notes;
   }
 
   void setPriority(bool priority) {

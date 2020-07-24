@@ -72,7 +72,7 @@ class TodoItem extends StatelessWidget {
                   color: Colors.transparent,
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
                   child: Icon(
                     Icons.check_box,
                     color: Colors.lightBlue,
@@ -139,7 +139,7 @@ class TodoItem extends StatelessWidget {
                     color: Colors.transparent,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
                     child: Icon(
                       Icons.check_box_outline_blank,
                       size: 28,
@@ -212,9 +212,9 @@ class TodoItem extends StatelessWidget {
                           ),
                         if(dueDate != null && reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                           Container(
-                            margin: EdgeInsets.only(top: 1.7),
+                            margin: EdgeInsets.fromLTRB(1.7, 1.7, 0, 0),
                             child: Transform.scale(
-                              scale: 2,
+                              scale: 0.25,
                               child: Image(
                                 image: AssetImage('assets/images/dot.png'),
                               ),
@@ -222,10 +222,10 @@ class TodoItem extends StatelessWidget {
                           ),
                         if(reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                           Container(
-                            margin: EdgeInsets.only(top: 1.6),
+                            margin: EdgeInsets.fromLTRB(0, 0.88, 1, 0),
                             child: Icon(
                               Icons.notifications,
-                              size: 14,
+                              size: 15,
                               color: Colors.grey[700],
                             ),
                           ),

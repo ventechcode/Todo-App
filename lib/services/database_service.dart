@@ -23,6 +23,7 @@ class DatabaseService {
       'dueDate': todo.dueDate,
       'reminderDate': todo.reminderDate,
       'deviceToken': await _firebaseMessaging.getToken(),
+      'notes': null,
     });
   }
 
@@ -51,6 +52,12 @@ class DatabaseService {
   Future updateReminderDate(String id, DateTime reminderDate) async {
     return await users.document(uid).collection(list).document(id).updateData({
       'reminderDate': reminderDate,
+    });
+  }
+
+  Future updateNotes(String id, String notes) async {
+    return await users.document(uid).collection(list).document(id).updateData({
+      'notes': notes,
     });
   }
 

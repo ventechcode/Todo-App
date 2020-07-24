@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/database_service.dart';
+import 'package:todoapp/widgets/todo_details/attach_section.dart';
 import 'package:todoapp/widgets/todo_details/date_picker.dart';
+import 'package:todoapp/widgets/todo_details/notes_section.dart';
 import 'package:todoapp/widgets/todo_details/reminder_picker.dart';
 import 'package:todoapp/widgets/todo_details/todo_title.dart';
 
@@ -51,6 +53,8 @@ class TodoDetailsScreen extends StatelessWidget {
                         databaseService: DatabaseService(data['uid'], list: data['list']),
                       ),
                       CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
+                      NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
+                      AttachSection(),
                     ],
                   ),
                 ),
