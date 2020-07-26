@@ -32,33 +32,35 @@ class TodoDetailsScreen extends StatelessWidget {
             if(snapshot.connectionState == ConnectionState.waiting) {
               return Center();
             }
-            return Column(
-              children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(22, 5, 0, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TodoTitle(
-                        snapshot.data['title'],
-                        data['id'],
-                        data['uid'],
-                        data['list'],
-                        data['value'],
-                        snapshot.data['priority'],
-                      ),
-                      ReminderPicker(
-                        todoID: data['id'],
-                        notificationDate: snapshot.data['reminderDate'],
-                        databaseService: DatabaseService(data['uid'], list: data['list']),
-                      ),
-                      CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
-                      NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
-                      AttachSection(),
-                    ],
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    margin: EdgeInsets.fromLTRB(22, 5, 0, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TodoTitle(
+                          snapshot.data['title'],
+                          data['id'],
+                          data['uid'],
+                          data['list'],
+                          data['value'],
+                          snapshot.data['priority'],
+                        ),
+                        ReminderPicker(
+                          todoID: data['id'],
+                          notificationDate: snapshot.data['reminderDate'],
+                          databaseService: DatabaseService(data['uid'], list: data['list']),
+                        ),
+                        CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
+                        NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
+                        AttachSection(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),

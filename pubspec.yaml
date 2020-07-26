@@ -36,6 +36,8 @@ dependencies:
   intl: ^0.16.1
   firebase_messaging: ^6.0.16
   dotted_border: ^1.0.6
+  keyboard_visibility: ^0.5.2
+  flutter_svg: ^0.18.0
 
   flutter_localizations:
     sdk: flutter
@@ -64,6 +66,7 @@ flutter:
     - assets/images/google_logo.png
     - assets/images/twitter_logo.png
     - assets/images/dot.png
+    - assets/images/notes.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

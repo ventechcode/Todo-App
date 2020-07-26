@@ -45,9 +45,30 @@ class _NotesSectionState extends State<NotesSection> {
               stream: widget.databaseService.todoStream(widget.todoId),
               builder: (context, snapshot) {
                 if(snapshot.connectionState == ConnectionState.waiting) {
-                  return Container();
+                  return DottedBorder(
+                    dashPattern: [4, 3],
+                    strokeCap: StrokeCap.round,
+                    strokeWidth: 0.88,
+                    borderType: BorderType.RRect,
+                    radius: Radius.circular(8),
+                    color: Colors.grey,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(8, 10, 8, 10),
+                        child: Text(
+                          'Tippe, um eine neue Notiz hinzuzufügen',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
                 }
-                if(snapshot.data['notes'] == '' || snapshot.data['notes'] == null) {
+                if(snapshot.data['notes'].trim() == '' || snapshot.data['notes'] == null) {
                   return GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed('/notes', arguments: {

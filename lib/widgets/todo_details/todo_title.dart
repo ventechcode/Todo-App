@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/database_service.dart';
 import 'package:todoapp/widgets/todo_details/priority_checkbox.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 
 class TodoTitle extends StatefulWidget {
   final String title;
@@ -33,6 +34,9 @@ class _TodoTitleState extends State<TodoTitle> {
     } else {
       lineThrough = false;
     }
+    KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
+      if(!visible) _focusNode.unfocus();
+    });
   }
 
   @override
@@ -43,7 +47,6 @@ class _TodoTitleState extends State<TodoTitle> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.of(context).padding;
     var screenWidth = MediaQuery.of(context).size.width;
     return Row(
       children: [
