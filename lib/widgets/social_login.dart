@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:todoapp/models/user.dart';
-import 'package:todoapp/services/auth_service.dart';
+
+import '../models/user.dart';
+import '../services/auth_service.dart';
 
 class SocialLoginSection extends StatefulWidget {
   final Function _toggleView;
@@ -24,36 +25,52 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
       children: <Widget>[
         Container(
           margin: EdgeInsets.fromLTRB(
-              0, screenHeight * 0.05, 0, screenHeight * 0.05),
+            0,
+            screenHeight * 0.05,
+            0,
+            screenHeight * 0.05,
+          ),
           child: Row(
             children: <Widget>[
               Container(
-                width: screenWidth * 0.42,
+                width: screenWidth * 0.42 - 1.6,
                 height: 1,
-                color: Colors.white,
+                color: Colors.black,
               ),
               Container(
                 margin: EdgeInsets.fromLTRB(
-                    screenWidth * 0.04, 0, screenWidth * 0.04, 0),
+                  screenWidth * 0.04,
+                  0,
+                  screenWidth * 0.04,
+                  0,
+                ),
                 child: Text(
                   'Oder',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white,
+                    color: Colors.black,
+                    fontFamily: 'Nexa',
                   ),
                 ),
               ),
               Container(
-                width: screenWidth * 0.42,
+                width: screenWidth * 0.42 - 1.6,
                 height: 1,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ],
           ),
         ),
         Container(
           height: screenHeight * 0.0625,
-          width: screenWidth * 0.75,
+          width: screenWidth * 0.8,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(2.36),
+            border: Border.all(
+              color: Colors.black,
+            ),
+          ),
           child: FlatButton(
             onPressed: () async {
               User user = await _authService.googleSignIn();
@@ -61,7 +78,6 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
                 print('Login failed!');
               }
             },
-            color: Colors.white,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -87,7 +103,7 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
         Container(
           margin: EdgeInsets.only(top: screenHeight * 0.03),
           height: screenHeight * 0.0625,
-          width: screenWidth * 0.75,
+          width: screenWidth * 0.8,
           child: FlatButton(
             onPressed: () async {
               User user = await _authService.twitterSignIn();
@@ -106,7 +122,7 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
                     image: AssetImage('assets/images/twitter_logo.png'),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.024),
+                SizedBox(width: screenWidth * 0.031),
                 Text(
                   'Mit Twitter anmelden',
                   style: TextStyle(
@@ -121,26 +137,30 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
         ),
         Container(
           margin: EdgeInsets.fromLTRB(
-              0, screenHeight * 0.04, 0, screenHeight * 0.02),
-          width: screenWidth * 0.75,
+            0,
+            screenHeight * 0.03,
+            0,
+            0,
+          ),
+          width: screenWidth * 0.798,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Text(
                 widget._description,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontSize: 14,
                 ),
               ),
-              SizedBox(width: screenWidth * 0.036),
+              SizedBox(width: screenWidth * 0.03),
               GestureDetector(
                 onTap: widget._toggleView,
                 child: Text(
-                  widget._text.toUpperCase(),
+                  widget._text,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
+                    color: Colors.black,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

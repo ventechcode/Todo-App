@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todoapp/services/database_service.dart';
 
 class NotesSection extends StatefulWidget {
@@ -68,7 +67,7 @@ class _NotesSectionState extends State<NotesSection> {
                     ),
                   );
                 }
-                if(snapshot.data['notes'].trim() == '' || snapshot.data['notes'] == null) {
+                if(snapshot.data['notes'] == '' || snapshot.data['notes'] == null) {
                   return GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed('/notes', arguments: {

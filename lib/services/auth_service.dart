@@ -18,9 +18,10 @@ class AuthService {
   Future<User> signUp(String username, String email, String password) async {
     try {
       AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
       FirebaseUser firebaseUser = result.user;
-      await DatabaseService(firebaseUser.uid).createUserDocument(username);
       await DatabaseService(firebaseUser.uid)
           .addUser(username, email, null, 'email');
       return _convertFirebaseUser(firebaseUser);
@@ -34,7 +35,9 @@ class AuthService {
   Future<User> signIn(String email, String password) async {
     try {
       AuthResult result = await _firebaseAuth.signInWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
       FirebaseUser user = result.user;
       return _convertFirebaseUser(user);
     } catch (e) {
@@ -54,10 +57,10 @@ class AuthService {
         accessToken: googleAuth.accessToken,
       );
 
-      FirebaseUser user =
-          (await _firebaseAuth.signInWithCredential(credential)).user;
+      AuthResult result = await _firebaseAuth.signInWithCredential(credential);
+      FirebaseUser user = result.user;
+
       if (await DatabaseService(user.uid).isUserExisting() == false) {
-        await DatabaseService(user.uid).createUserDocument(user.displayName);
         await DatabaseService(user.uid)
             .addUser(user.displayName, user.email, user.photoUrl, 'google');
       }
@@ -80,7 +83,6 @@ class AuthService {
         FirebaseUser user =
             (await _firebaseAuth.signInWithCredential(credential)).user;
         if (await DatabaseService(user.uid).isUserExisting() == false) {
-          await DatabaseService(user.uid).createUserDocument(user.displayName);
           await DatabaseService(user.uid)
               .addUser(user.displayName, user.email, user.photoUrl, 'twitter');
         }

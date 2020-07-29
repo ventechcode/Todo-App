@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:todoapp/models/todo.dart';
+
+import '../models/todo.dart';
 
 class DatabaseService {
   final String uid;
@@ -57,24 +58,12 @@ class DatabaseService {
 
   Future updateNotes(String id, String notes) async {
     return await users.document(uid).collection(list).document(id).updateData({
-      'notes': notes,
+      'notes': notes.trim(),
     });
   }
 
   Stream<QuerySnapshot> getTodos({String orderBy}) {
     return users.document(uid).collection(list).orderBy(orderBy).snapshots();
-  }
-
-  Future createUserDocument(String username) async {
-    return await users.document(uid).collection('Alle Aufgaben').document().setData(
-        {
-          'todos': [{
-            'id': '1337',
-            'title': 'Willkommen ' + username,
-            'value': false,
-          }]
-        }
-    );
   }
 
   Future addUser(String username, String email, String photoUrl, String authMethod) async {

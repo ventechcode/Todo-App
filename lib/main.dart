@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:todoapp/screens/notes_screen.dart';
-import 'package:todoapp/screens/settings_screen.dart';
-import 'package:todoapp/screens/todo_details_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import './models/user.dart';
 import './screens/wrapper.dart';
 import './services/auth_service.dart';
+import './screens/todo_details_screen.dart';
+import './screens/notes_screen.dart';
+import './screens/settings_screen.dart';
 
 void main() {
   runApp(MyApp());

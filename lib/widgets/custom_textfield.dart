@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/fieldtype.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String lblText;
-  final int fieldType; // 1: username, 2: email, 3: password
+  final FieldType fieldType;
   final Icon suffixIcon;
   final TextInputType keyboardType;
+  final FocusNode focusNode;
 
   CustomTextField({
     this.lblText,
@@ -13,6 +15,7 @@ class CustomTextField extends StatelessWidget {
     this.fieldType,
     this.controller,
     this.keyboardType,
+    this.focusNode,
   });
 
   String get content {
@@ -22,22 +25,23 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 10),
+      margin: EdgeInsets.only(top: 12),
       height: MediaQuery.of(context).size.height * 0.078,
-      width: MediaQuery.of(context).size.width * 0.75,
+      width: MediaQuery.of(context).size.width * 0.8,
       child: TextFormField(
         autofocus: false,
+        focusNode: focusNode,
         controller: controller,
-        obscureText: fieldType == 3 ? true : false,
-        cursorColor: Colors.white,
+        obscureText: fieldType == FieldType.PASSWORD ? true : false,
+        cursorColor: Colors.black,
         cursorWidth: 1,
         keyboardType: keyboardType,
         textInputAction:
-        fieldType == 3 ? TextInputAction.done : TextInputAction.next,
+        fieldType == FieldType.PASSWORD ? TextInputAction.done : TextInputAction.next,
         onFieldSubmitted: (_) =>
-        fieldType != 3 ? FocusScope.of(context).nextFocus() : null,
+        fieldType != FieldType.PASSWORD ? FocusScope.of(context).nextFocus() : null,
         style: TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontSize: 16,
         ),
         decoration: InputDecoration(
@@ -52,22 +56,22 @@ class CustomTextField extends StatelessWidget {
           suffixIcon: suffixIcon,
           labelText: lblText,
           labelStyle: TextStyle(
-            fontSize: 14,
-            color: Colors.white,
+            fontSize: 15,
+            color: Colors.black,
           ),
-          fillColor: Color.fromRGBO(43, 43, 43, 1),
+          fillColor: Colors.white,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(3),
             borderSide: BorderSide(
-              color: Colors.white,
-              width: 1.5,
+              color: Colors.black,
+              width: 1.87,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(3),
             borderSide: BorderSide(
-              color: Colors.white,
-              width: 1.5,
+              color: Colors.black,
+              width: 1.87,
             ),
           ),
         ),

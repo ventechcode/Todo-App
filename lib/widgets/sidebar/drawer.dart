@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todoapp/widgets/sidebar/profile_section.dart';
 
+import '../../widgets/sidebar/profile_section.dart';
 import '../../models/user.dart';
 
 class Sidebar extends StatelessWidget {
