@@ -55,7 +55,7 @@ class TodoDetailsScreen extends StatelessWidget {
                         ),
                         CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
                         NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
-                        AttachSection(),
+                        AttachSection(DatabaseService(data['uid'], list: data['list']), data['id']),
                       ],
                     ),
                   ),

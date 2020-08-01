@@ -27,7 +27,9 @@ class MyApp extends StatelessWidget {
           const Locale('de', 'DE'),
         ],
         title: 'Todo-App',
-        theme: ThemeData.light(),
+        theme: ThemeData(
+          canvasColor: Colors.transparent,
+        ),
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         routes: {

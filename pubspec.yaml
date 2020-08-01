@@ -38,6 +38,10 @@ dependencies:
   dotted_border: ^1.0.6
   keyboard_visibility: ^0.5.2
   flutter_svg: ^0.18.0
+  file_picker: ^1.13.0+1
+  font_awesome_flutter: ^8.8.1
+  http: ^0.12.2
+  open_file: ^3.0.1
 
   flutter_localizations:
     sdk: flutter

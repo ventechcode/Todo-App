@@ -19,6 +19,9 @@ class Sidebar extends StatelessWidget {
             color: Colors.grey[100],
             child: ProfileSection(user),
           ),
+          Container(
+            color: Colors.white,
+          ),
         ],
       ),
     );

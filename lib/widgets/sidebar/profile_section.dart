@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:todoapp/models/user.dart';
-import 'package:todoapp/services/database_service.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../services/database_service.dart';
+import '../../models/user.dart';
 
 class ProfileSection extends StatefulWidget {
   final User user;

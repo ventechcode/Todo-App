@@ -19,6 +19,7 @@ class TodoItem extends StatelessWidget {
   final ValueKey key;
   final Timestamp dueDate;
   final Timestamp reminderDate;
+  final String notes;
 
   TodoItem({
     this.id,
@@ -31,6 +32,7 @@ class TodoItem extends StatelessWidget {
     this.priority,
     this.dueDate,
     this.reminderDate,
+    this.notes,
   });
 
   Future<String> getUid() async {
@@ -172,11 +174,11 @@ class TodoItem extends StatelessWidget {
                     height: 3.6,
                     width: 16,
                   ),
-                if(dueDate != null || reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                if(notes != null && notes != '' || dueDate != null || reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                   Container(
-                    margin: EdgeInsets.fromLTRB(0, 3, 5, 0),
+                    margin: priority ? EdgeInsets.fromLTRB(0, 2, 5, 0) : EdgeInsets.fromLTRB(0, 0, 5, 0),
                     height: 20,
-                    width: screenWidth * 0.35,
+                    width: screenWidth * 0.44,
                     child: Row(
                       children: [
                         if(dueDate != null)
@@ -212,7 +214,7 @@ class TodoItem extends StatelessWidget {
                           ),
                         if(dueDate != null && reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                           Container(
-                            margin: EdgeInsets.fromLTRB(1.7, 1.7, 0, 0),
+                            margin: EdgeInsets.fromLTRB(1.7, 1.87, 1.7, 0),
                             child: Transform.scale(
                               scale: 0.25,
                               child: Image(
@@ -222,7 +224,7 @@ class TodoItem extends StatelessWidget {
                           ),
                         if(reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
                           Container(
-                            margin: EdgeInsets.fromLTRB(0, 0.88, 1, 0),
+                            margin: dueDate == null ? EdgeInsets.fromLTRB(0, 0.88, 1, 0) : EdgeInsets.fromLTRB(0, 0.88, 0, 0),
                             child: Icon(
                               Icons.notifications,
                               size: 15,
@@ -250,6 +252,25 @@ class TodoItem extends StatelessWidget {
                                 color: Colors.grey[700],
                                 fontSize: 12,
                               ),
+                            ),
+                          ),
+                        if(notes != null && notes != '' && reminderDate != null || dueDate != null)
+                          Container(
+                            margin: EdgeInsets.fromLTRB(1.7, 1.87, 1.7, 0),
+                            child: Transform.scale(
+                              scale: 0.25,
+                              child: Image(
+                                image: AssetImage('assets/images/dot.png'),
+                              ),
+                            ),
+                          ),
+                        if(notes != null && notes != '')
+                          Container(
+                            margin: notes != null && notes != '' && reminderDate != null || dueDate != null ? EdgeInsets.fromLTRB(0.3, 1.44, 0, 0) : EdgeInsets.fromLTRB(0, 1, 0, 0),
+                            child: Icon(
+                              Icons.note_outlined,
+                              size: 15,
+                              color: Colors.grey[700],
                             ),
                           ),
                       ],

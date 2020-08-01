@@ -2,12 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:todoapp/models/todo.dart';
-import 'package:todoapp/models/user.dart';
-import 'package:todoapp/widgets/scroll_behavior.dart';
-import 'package:todoapp/widgets/todo_item.dart';
+
+import '../models/todo.dart';
+import '../models/user.dart';
+import '../widgets/scroll_behavior.dart';
+import '../widgets/todo_item.dart';
 import '../widgets/sidebar/drawer.dart';
-import 'package:todoapp/services/database_service.dart';
+import '../services/database_service.dart';
 
 class TaskScreen extends StatefulWidget {
   final User user;
@@ -26,19 +27,20 @@ class _TaskScreenState extends State<TaskScreen> {
   TextEditingController _controller = TextEditingController();
   FocusNode inputField = FocusNode();
   bool activateBtn = false;
+  String orderBy = 'value'; // TODO: Create OrderBy Enum
 
   @override
   void initState() {
     super.initState();
     inputField.unfocus();
     databaseService = DatabaseService(widget.user.uid, list: widget.list);
-    dataStream = databaseService.getTodos(orderBy: 'value');
+    dataStream = databaseService.getTodos(orderBy: orderBy);
     _firebaseMessaging = FirebaseMessaging();
     _firebaseMessaging.requestNotificationPermissions();
     _firebaseMessaging.configure(
       onLaunch: (message) {
         bool value;
-        if(message['data']['value'] == 'true') {
+        if (message['data']['value'] == 'true') {
           value = true;
         } else if (message['data']['value'] == 'false') {
           value = false;
@@ -53,7 +55,7 @@ class _TaskScreenState extends State<TaskScreen> {
       },
       onMessage: (message) {
         bool value;
-        if(message['data']['value'] == 'true') {
+        if (message['data']['value'] == 'true') {
           value = true;
         } else if (message['data']['value'] == 'false') {
           value = false;
@@ -68,14 +70,14 @@ class _TaskScreenState extends State<TaskScreen> {
       },
       onResume: (message) {
         bool value;
-        if(message['data']['value'] == 'true') {
+        if (message['data']['value'] == 'true') {
           value = true;
         } else if (message['data']['value'] == 'false') {
           value = false;
         }
         Navigator.of(context).pushNamed('/todo_details', arguments: {
           'id': message['data']['id'],
-          'value':  value,
+          'value': value,
           'uid': widget.user.uid,
           'list': widget.list,
         });
@@ -100,9 +102,10 @@ class _TaskScreenState extends State<TaskScreen> {
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.of(context).padding;
-    var screenHeight = MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight =
+        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
     var screenWidth = MediaQuery.of(context).size.width;
-    if(MediaQuery.of(context).viewInsets.bottom == 0) inputField.unfocus();
+    if (MediaQuery.of(context).viewInsets.bottom == 0) inputField.unfocus();
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -120,7 +123,12 @@ class _TaskScreenState extends State<TaskScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
         ),
-        drawer: Sidebar(widget.user),
+        drawer: Theme(
+          data: ThemeData(
+            canvasColor: Colors.white,
+          ),
+          child: Sidebar(widget.user),
+        ),
         drawerEnableOpenDragGesture: true,
         body: ScrollConfiguration(
           behavior: CustomScrollBehavior(),
@@ -136,7 +144,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       return Container(
                         child: Center(
                           child: SpinKitFadingCircle(
-                            color: Colors.lightBlue,
+                            color: Colors.black,
                             size: 44,
                           ),
                         ),
@@ -155,11 +163,14 @@ class _TaskScreenState extends State<TaskScreen> {
                               title: todos[index]['title'],
                               done: todos[index]['value'],
                               delete: () => delete(todos[index].documentID),
-                              toggleDone: () => toggleDone(todos[index].documentID, todos[index]['value']),
+                              toggleDone: () => toggleDone(
+                                  todos[index].documentID,
+                                  todos[index]['value']),
                               list: widget.list,
                               priority: todos[index]['priority'],
                               dueDate: todos[index]['dueDate'],
                               reminderDate: todos[index]['reminderDate'],
+                              notes: todos[index]['notes'],
                             );
                           },
                         ),
@@ -236,7 +247,8 @@ class _TaskScreenState extends State<TaskScreen> {
                     Container(
                       margin: EdgeInsets.only(left: 5),
                       child: CircleAvatar(
-                        backgroundColor: activateBtn ? Colors.lightBlue : Colors.grey,
+                        backgroundColor:
+                            activateBtn ? Colors.lightBlue : Colors.grey,
                         radius: 21,
                         child: Center(
                           child: IconButton(

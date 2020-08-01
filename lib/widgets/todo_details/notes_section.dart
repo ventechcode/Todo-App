@@ -21,24 +21,21 @@ class _NotesSectionState extends State<NotesSection> {
         .size
         .width;
     return Container(
-      margin: const EdgeInsets.fromLTRB(0.88, 16, 0, 0),
+      margin: const EdgeInsets.fromLTRB(0, 16, 0, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.only(left: 1),
-            child: Text(
-              'Notizen',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Nexa'
-              ),
+          Text(
+            'Notizen',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Nexa'
             ),
           ),
           Container(
-            margin: const EdgeInsets.fromLTRB(0.88, 12, 0, 0),
+            margin: const EdgeInsets.fromLTRB(1, 12, 0, 0),
             width: screenWidth * 0.87,
             child: StreamBuilder(
               stream: widget.databaseService.todoStream(widget.todoId),
