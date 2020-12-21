@@ -21,7 +21,7 @@ class _NotesSectionState extends State<NotesSection> {
         .size
         .width;
     return Container(
-      margin: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+      margin: const EdgeInsets.only(top: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,8 +35,8 @@ class _NotesSectionState extends State<NotesSection> {
             ),
           ),
           Container(
-            margin: const EdgeInsets.fromLTRB(1, 12, 0, 0),
-            width: screenWidth * 0.87,
+            margin: const EdgeInsets.only(top: 12),
+            width: screenWidth * 0.88,
             child: StreamBuilder(
               stream: widget.databaseService.todoStream(widget.todoId),
               builder: (context, snapshot) {

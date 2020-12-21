@@ -20,6 +20,7 @@ class TodoTitle extends StatefulWidget {
 class _TodoTitleState extends State<TodoTitle> {
   final TextEditingController _titleController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
   DatabaseService _databaseService;
   bool lineThrough;
 
@@ -34,8 +35,8 @@ class _TodoTitleState extends State<TodoTitle> {
     } else {
       lineThrough = false;
     }
-    KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
-      if(!visible) _focusNode.unfocus();
+    keyboard.addNewListener(onHide: () {
+      _focusNode.unfocus();
     });
   }
 
@@ -43,6 +44,7 @@ class _TodoTitleState extends State<TodoTitle> {
   void dispose() {
     super.dispose();
     _titleController.dispose();
+    keyboard.dispose();
   }
 
   @override

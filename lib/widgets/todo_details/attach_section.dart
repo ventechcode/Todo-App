@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:todoapp/widgets/scroll_behavior.dart';
 
 import '../../services/database_service.dart';
 
@@ -26,9 +27,12 @@ class _AttachSectionState extends State<AttachSection> {
   final ImagePicker _imagePicker = ImagePicker();
   List<File> files = [];
   bool gotFiles = false;
+  bool loading = false;
 
   void _pickFile() async {
-    File pickedFile = await FilePicker.getFile();
+    File pickedFile = await FilePicker.getFile(
+      type: FileType.any,
+    );
     if (pickedFile.lengthSync() > 3000000) {
       print('File is too big');
     } else {
@@ -49,7 +53,13 @@ class _AttachSectionState extends State<AttachSection> {
     if (pickedImage.lengthSync() > 3000000) {
       print('Bild ist zu groß');
     } else {
-      await widget.databaseService.storeFile(pickedImage, widget.todoId);
+      await widget.databaseService
+          .storeFile(pickedImage, widget.todoId)
+          .whenComplete(() {
+        setState(() {
+          getFiles();
+        });
+      });
     }
   }
 
@@ -176,10 +186,18 @@ class _AttachSectionState extends State<AttachSection> {
 
   Future getFiles() async {
     await widget.databaseService.getFiles(widget.todoId).then((files) {
-      setState(() {
-        this.files = files;
-        if (this.files.isNotEmpty) gotFiles = true;
-      });
+      if(this.mounted) {
+        setState(() {
+          this.files = files;
+          if (this.files.isNotEmpty) {
+            gotFiles = true;
+            widget.databaseService.updateGotFiles(widget.todoId, gotFiles);
+          } else {
+            gotFiles = false;
+            widget.databaseService.updateGotFiles(widget.todoId, gotFiles);
+          }
+        });
+      }
     });
   }
 
@@ -191,20 +209,51 @@ class _AttachSectionState extends State<AttachSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            child: Text(
-              'Dateien',
-              style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Nexa'),
-            ),
+          Row(
+            children: [
+              Container(
+                child: Text(
+                  'Dateien',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Nexa'),
+                ),
+              ),
+              if(gotFiles)
+                SizedBox(width: screenWidth * 0.5025,),
+              if (gotFiles)
+                GestureDetector(
+                  onTap: () => _showAttachDialog(context),
+                  child: DottedBorder(
+                    radius: Radius.circular(20),
+                    dashPattern: [4, 3],
+                    strokeCap: StrokeCap.round,
+                    strokeWidth: 0.88,
+                    borderType: BorderType.RRect,
+                    color: Colors.grey,
+                    child: Container(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                        child: Text(
+                          'Hochladen',
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           !gotFiles
               ? Container(
-                  margin: const EdgeInsets.fromLTRB(1, 12, 0, 0),
-                  width: screenWidth * 0.87,
+                  margin: const EdgeInsets.only(top: 12),
+                  width: screenWidth * 0.88,
                   child: GestureDetector(
                     onTap: () => _showAttachDialog(context),
                     child: DottedBorder(
@@ -232,99 +281,170 @@ class _AttachSectionState extends State<AttachSection> {
                   ),
                 )
               : Container(
-                  margin: const EdgeInsets.fromLTRB(1, 12, 0, 0),
+                  margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                   height: 200,
-                  width: screenWidth * 0.87,
+                  width: screenWidth * 0.88,
                   child: StreamBuilder(
                     stream: widget.databaseService.files(widget.todoId),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting &&
+                      if (snapshot.connectionState == ConnectionState.waiting ||
                           !snapshot.hasData) {
                         return Container();
-                      } else {
-                        return ListView.builder(
+                      }
+                      return ScrollConfiguration(
+                        behavior: CustomScrollBehavior(),
+                        child: ListView.builder(
                           itemCount: files.length,
                           itemBuilder: (context, index) {
-                            return Container(
-                              child: Row(
+                            return InkWell(
+                              onTap: () {
+                                OpenFile.open(files[index].path);
+                              },
+                              splashColor: Colors.grey[200],
+                              highlightColor: Colors.grey[200],
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(bottom: 6),
-                                    height: 36,
-                                    width: 36,
-                                    decoration: BoxDecoration(
-                                      color: Colors.lightBlue,
-                                      borderRadius: BorderRadius.circular(5),
-                                      image: DecorationImage(
-                                        image: NetworkImage(snapshot.data.documents[index]['url']),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    child: snapshot.data.documents[index]
-                                                ['type'] == 'mp4'
-                                        ? Center(
-                                            child: Text(
-                                              'MP4',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 8, 0, 0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          margin: const EdgeInsets.only(bottom: 6),
+                                          height: 36,
+                                          width: 36,
+                                          decoration: BoxDecoration(
+                                            color: Colors.lightBlue,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            image: DecorationImage(
+                                              image: NetworkImage(snapshot
+                                                  .data.documents[index]['url']),
+                                              fit: BoxFit.cover,
                                             ),
-                                          )
-                                        : null,
-                                  ),
-                                  SizedBox(
-                                    width: 16,
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding:
-                                            const EdgeInsets.only(right: 5),
-                                        child: Text(
-                                          path
-                                              .basename(files[index].path)
-                                              .substring(3),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w500,
                                           ),
+                                          child: snapshot.data.documents[index]
+                                                      ['type'] ==
+                                                  'mp4'
+                                              ? Center(
+                                                  child: Text(
+                                                    'MP4',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                )
+                                              : null,
                                         ),
-                                      ),
-                                      SizedBox(
-                                        height: 3,
-                                      ),
-                                      Container(
-                                        child: Text(
-                                          formatBytes(
-                                                  snapshot.data.documents[index]
-                                                      ['bytes'],
-                                                  2)
-                                              .replaceAll(".", ","),
-                                          style: TextStyle(
-                                            color: Colors.grey[700],
-                                            fontWeight: FontWeight.w500,
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              child: Text(
+                                                path
+                                                            .basename(
+                                                                files[index].path)
+                                                            .substring(3)
+                                                            .length >
+                                                        24
+                                                    ? path
+                                                        .basename(
+                                                            files[index].path)
+                                                        .substring(3)
+                                                        .replaceRange(
+                                                            21,
+                                                            path
+                                                                .basename(
+                                                                    files[index]
+                                                                        .path)
+                                                                .substring(3)
+                                                                .length,
+                                                            ".." +
+                                                                snapshot.data
+                                                                            .documents[
+                                                                        index]
+                                                                    ['type'])
+                                                    : path
+                                                        .basename(
+                                                            files[index].path)
+                                                        .substring(3),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              width: screenWidth * 0.53,
+                                            ),
+                                            SizedBox(
+                                              height: 3,
+                                            ),
+                                            Container(
+                                              child: Text(
+                                                formatBytes(
+                                                        snapshot.data
+                                                                .documents[index]
+                                                            ['bytes'],
+                                                        2)
+                                                    .replaceAll(".", ","),
+                                                style: TextStyle(
+                                                  color: Colors.grey[700],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              margin: EdgeInsets.only(bottom: 6),
+                                            ),
+                                          ],
+                                        ),
+                                        Container(
+                                          child: IconButton(
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Colors.grey[700],
+                                              size: 23,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                widget.databaseService.deleteFile(
+                                                    path
+                                                        .basename(
+                                                            files[index].path)
+                                                        .substring(3),
+                                                    widget.todoId);
+                                                files.removeWhere((file) =>
+                                                    file.path ==
+                                                    files[index].path);
+                                                if (files.isEmpty) {
+                                                  gotFiles = false;
+                                                } else {
+                                                  gotFiles = true;
+                                                }
+                                              });
+                                            },
                                           ),
+                                          padding: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, 0, 2),
                                         ),
-                                      ),
-                                      Container(
-                                        child: Divider(
-                                          height: 1,
-                                          color: Colors.grey[700],
-                                          thickness: 1,
-                                        ),
-                                        width: screenWidth * 0.73 - 1.6,
-                                        padding: const EdgeInsets.only(top: 6),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    child: Divider(
+                                      height: 1,
+                                      color: Colors.grey[700],
+                                      thickness: 1,
+                                    ),
+                                    width: screenWidth * 0.89,
                                   ),
                                 ],
                               ),
                             );
                           },
-                        );
-                      }
+                        ),
+                      );
                     },
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:todoapp/widgets/todo_details/attach_section.dart';
 import 'package:todoapp/widgets/todo_details/date_picker.dart';
 import 'package:todoapp/widgets/todo_details/notes_section.dart';
 import 'package:todoapp/widgets/todo_details/reminder_picker.dart';
+import 'package:todoapp/widgets/todo_details/tag_section.dart';
 import 'package:todoapp/widgets/todo_details/todo_title.dart';
 
 class TodoDetailsScreen extends StatelessWidget {
@@ -56,6 +57,7 @@ class TodoDetailsScreen extends StatelessWidget {
                         CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
                         NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
                         AttachSection(DatabaseService(data['uid'], list: data['list']), data['id']),
+                        TagSection(DatabaseService(data['uid'], list: data['list']), data['id']),
                       ],
                     ),
                   ),

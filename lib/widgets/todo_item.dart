@@ -20,6 +20,7 @@ class TodoItem extends StatelessWidget {
   final Timestamp dueDate;
   final Timestamp reminderDate;
   final String notes;
+  final bool gotFiles;
 
   TodoItem({
     this.id,
@@ -33,11 +34,24 @@ class TodoItem extends StatelessWidget {
     this.dueDate,
     this.reminderDate,
     this.notes,
+    this.gotFiles,
   });
 
   Future<String> getUid() async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     return user.uid;
+  }
+
+  bool gotRowData() {
+    return gotFiles || notes != null && notes != '' || dueDate != null || reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false;
+  }
+
+  bool hasDueAndReminderDate() {
+    return dueDate != null && reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false;
+  }
+
+  bool gotOnlyFiles() {
+    return dueDate == null && reminderDate == null && notes == null || notes == '';
   }
 
   @override
@@ -123,6 +137,7 @@ class TodoItem extends StatelessWidget {
             dense: true,
             contentPadding: EdgeInsets.symmetric(vertical: 4),
             onTap: () async {
+              if(gotFiles) print('test');
               Navigator.of(context)
                   .pushNamed('/todo_details', arguments: {
                 'id': id,
@@ -174,7 +189,7 @@ class TodoItem extends StatelessWidget {
                     height: 3.6,
                     width: 16,
                   ),
-                if(notes != null && notes != '' || dueDate != null || reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                if(gotRowData())
                   Container(
                     margin: priority ? EdgeInsets.fromLTRB(0, 2, 5, 0) : EdgeInsets.fromLTRB(0, 0, 5, 0),
                     height: 20,
@@ -212,17 +227,17 @@ class TodoItem extends StatelessWidget {
                               ),
                             ),
                           ),
-                        if(dueDate != null && reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                        if(hasDueAndReminderDate())
                           Container(
-                            margin: EdgeInsets.fromLTRB(1.7, 1.87, 1.7, 0),
+                            margin: EdgeInsets.fromLTRB(1, 1.87, 1, 0),
                             child: Transform.scale(
-                              scale: 0.25,
+                              scale: 0.21,
                               child: Image(
                                 image: AssetImage('assets/images/dot.png'),
                               ),
                             ),
                           ),
-                        if(reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                        if(reminderDate != null && DateTime.now().isAfter(reminderDate.toDate()) == false) // got reminder date
                           Container(
                             margin: dueDate == null ? EdgeInsets.fromLTRB(0, 0.88, 1, 0) : EdgeInsets.fromLTRB(0, 0.88, 0, 0),
                             child: Icon(
@@ -231,7 +246,7 @@ class TodoItem extends StatelessWidget {
                               color: Colors.grey[700],
                             ),
                           ),
-                        if(reminderDate != null && dueDate == null && DateTime.now().isAfter(reminderDate.toDate()) == false)
+                        if(reminderDate != null && dueDate == null && DateTime.now().isAfter(reminderDate.toDate()) == false) // got valid reminder and due date
                           Container(
                             margin: EdgeInsets.fromLTRB(2, 1, 0, 0),
                             child: Text(
@@ -254,22 +269,32 @@ class TodoItem extends StatelessWidget {
                               ),
                             ),
                           ),
-                        if(notes != null && notes != '' && reminderDate != null || dueDate != null)
-                          Container(
-                            margin: EdgeInsets.fromLTRB(1.7, 1.87, 1.7, 0),
-                            child: Transform.scale(
-                              scale: 0.25,
-                              child: Image(
-                                image: AssetImage('assets/images/dot.png'),
+                        if((reminderDate != null && !DateTime.now().isAfter(reminderDate.toDate())) || dueDate != null) // has valid notes and a reminder or due date
+                          if(notes != null && notes != '' || gotFiles)
+                            Container(
+                              margin: EdgeInsets.fromLTRB(1, 1.87, 1, 0),
+                              child: Transform.scale(
+                                scale: 0.21,
+                                child: Image(
+                                  image: AssetImage('assets/images/dot.png'),
+                                ),
                               ),
                             ),
-                          ),
                         if(notes != null && notes != '')
                           Container(
                             margin: notes != null && notes != '' && reminderDate != null || dueDate != null ? EdgeInsets.fromLTRB(0.3, 1.44, 0, 0) : EdgeInsets.fromLTRB(0, 1, 0, 0),
                             child: Icon(
                               Icons.note_outlined,
                               size: 15,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        if(gotFiles)
+                          Container(
+                            margin: EdgeInsets.only(top: 2),
+                            child: Icon(
+                              Icons.attach_file,
+                              size: 14,
                               color: Colors.grey[700],
                             ),
                           ),

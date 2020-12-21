@@ -171,6 +171,7 @@ class _TaskScreenState extends State<TaskScreen> {
                               dueDate: todos[index]['dueDate'],
                               reminderDate: todos[index]['reminderDate'],
                               notes: todos[index]['notes'],
+                              gotFiles: todos[index]['gotFiles'],
                             );
                           },
                         ),

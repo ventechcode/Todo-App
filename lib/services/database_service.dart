@@ -4,7 +4,6 @@ import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/todo.dart';
 
@@ -27,6 +26,7 @@ class DatabaseService {
       'reminderDate': todo.reminderDate,
       'deviceToken': await _firebaseMessaging.getToken(),
       'notes': null,
+      'gotFiles': false,
     });
   }
 
@@ -157,7 +157,8 @@ class DatabaseService {
   }
 
   Future deleteFile(String fileName, String todoId) async {
-    return await FirebaseStorage.instance.ref().child('users').child('$uid/$todoId').child('$fileName').delete();
+    await FirebaseStorage.instance.ref().child('users').child('$uid/$todoId').child('$fileName').delete();
+    await users.document(uid).collection(list).document(todoId).collection('files').document(fileName).delete();
   }
 
   Future<List<File>> getFiles(String todoId) async {
@@ -179,5 +180,15 @@ class DatabaseService {
 
   Stream files(String todoId) {
     return users.document(uid).collection(list).document(todoId).collection('files').snapshots();
+  }
+
+  Future updateGotFiles(String todoId, bool val) async {
+    return users.document(uid).collection(list).document(todoId).updateData({
+      'gotFiles': val,
+    });
+  }
+
+  Stream subtasks(String todoId) {
+    return users.document(uid).collection(list).document(todoId).collection('subtasks').snapshots();
   }
 }

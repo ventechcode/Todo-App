@@ -13,6 +13,7 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
   bool showImg;
 
   @override
@@ -24,12 +25,10 @@ class _NotesScreenState extends State<NotesScreen> {
       showImg = false;
       _controller.text = widget.data['notes'];
     }
-    KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
-      if (!visible) {
-        _focusNode.unfocus();
-        widget.data['db_service'].updateNotes(widget.data['todoId'], _controller.text);
-        if(_controller.text.length < 1) setState(() => showImg = true);
-      }
+    keyboard.addNewListener(onHide: () {
+      _focusNode.unfocus();
+      widget.data['db_service'].updateNotes(widget.data['todoId'], _controller.text);
+      if(_controller.text.length < 1) setState(() => showImg = true);
     });
   }
 
