@@ -16,15 +16,20 @@ class TagSection extends StatefulWidget {
 }
 
 class _TagSectionState extends State<TagSection> {
-  Map<String, dynamic> tags = {
-    'Priorität': {'active': false, 'color': Colors.amberAccent},
-    'Wichtig': {'active': false, 'color': Colors.pinkAccent},
-    'Mittlere Priorität': {'active': false, 'color': Colors.grey[300]},
-    'Nicht kritisch': {'active': false, 'color': Colors.deepPurple[300]},
-    'In Bearbeitung': {'active': false, 'color': Colors.deepOrangeAccent},
-    'Familie': {'active': false, 'color': Colors.lightGreenAccent},
-    'Arbeit': {'active': false, 'color': Colors.lightBlueAccent},
-  };
+  Map<String, dynamic> tags = {};
+
+  @override
+  void initState() {
+    super.initState();
+    getTags();
+  }
+
+  Future getTags() async {
+    Map temp = await widget.databaseService.getTags(widget.todoId);
+    setState(() {
+      tags = temp;
+    });
+  }
 
   void _showTagsDialog(BuildContext ctx) {
     var screenHeight = MediaQuery.of(ctx).size.height;
@@ -61,34 +66,39 @@ class _TagSectionState extends State<TagSection> {
                     SizedBox(height: 10),
                     for (var tag in tags.entries)
                       Container(
-                        color: tag.value['color'],
+                        color: Color(int.parse(tag.value['color'])),
                         child: ListTile(
-                          onTap: () {
+                          onTap: () async {
                             setState(() {
                               update(() {
                                 tag.value['active'] = !tag.value['active'];
                               });
                             });
+                            await widget.databaseService
+                                .updateTags(widget.todoId, tags);
                           },
                           leading: Theme(
-                            data: ThemeData(unselectedWidgetColor: Colors.white),
+                            data:
+                                ThemeData(unselectedWidgetColor: Colors.white),
                             child: Checkbox(
-                              checkColor: tag.value['color'],
+                              checkColor: Color(int.parse(tag.value['color'])),
                               activeColor: Colors.white,
                               focusColor: Colors.white,
                               hoverColor: Colors.white,
-                              onChanged: (val) {
+                              onChanged: (val) async {
                                 setState(() {
                                   update(() {
                                     tag.value['active'] = val;
                                   });
                                 });
+                                await widget.databaseService
+                                    .updateTags(widget.todoId, tags);
                               },
                               value: tag.value['active'],
                             ),
                           ),
                           title: Text(
-                            tag.key,
+                            tag.value['name'],
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 17,
@@ -107,67 +117,67 @@ class _TagSectionState extends State<TagSection> {
     );
   }
 
-  void removeTag(String name) {
+  void removeTag(String key) async {
     setState(() {
-      tags[name]['active'] = false;
+      tags[key]['active'] = false;
     });
+    await widget.databaseService.updateTags(widget.todoId, tags);
   }
 
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery.of(context).size.width;
     return Container(
       margin: const EdgeInsets.only(top: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'Tags',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Nexa'),
-              ),
-              SizedBox(width: screenWidth * 0.445),
-            ],
+          Text(
+            'Tags',
+            style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Nexa'),
           ),
           Container(
             margin: EdgeInsets.only(top: 12),
             child: Wrap(
               children: [
                 for (var tag in tags.entries)
-                  if (tag.value['active']) Tag(tag.key, tag.value['color'], () => removeTag(tag.key)),
-                tags.values.toList().every((element) => element['active'] == true) ? Container() :
-                  Container(
-                    margin: EdgeInsets.only(top: 1),
-                    child: GestureDetector(
-                      onTap: () => _showTagsDialog(context),
-                      child: DottedBorder(
-                        radius: Radius.circular(20),
-                        dashPattern: [4, 3],
-                        strokeCap: StrokeCap.round,
-                        strokeWidth: 0.88,
-                        borderType: BorderType.RRect,
-                        color: Colors.grey,
-                        child: Container(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(8, 3, 8, 3),
-                            child: Text(
-                              'Tag hinzufügen',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
+                  if (tag.value['active'])
+                    Tag(tag.value['name'], Color(int.parse(tag.value['color'])),
+                        () => removeTag(tag.key)),
+                tags.values
+                        .toList()
+                        .every((element) => element['active'] == true)
+                    ? Container()
+                    : Container(
+                        margin: EdgeInsets.fromLTRB(0, 1.25, 0, 8),
+                        child: GestureDetector(
+                          onTap: () => _showTagsDialog(context),
+                          child: DottedBorder(
+                            radius: Radius.circular(20),
+                            dashPattern: [4, 3],
+                            strokeCap: StrokeCap.round,
+                            strokeWidth: 0.88,
+                            borderType: BorderType.RRect,
+                            color: Colors.grey,
+                            child: Container(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(6, 2.5, 6, 2.75),
+                                child: Text(
+                                  'Tag hinzufügen',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
               ],
             ),
           ),

@@ -1,9 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
-import 'package:todoapp/services/database_service.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LogoutItem extends StatefulWidget {
   final String uid;

@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
-      if(!visible) {
+      if (!visible) {
         _emailNode.unfocus();
         _passwordNode.unfocus();
       }

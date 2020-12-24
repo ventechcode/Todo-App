@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
 
@@ -25,19 +25,27 @@ class _DeleteAccountItemState extends State<DeleteAccountItem> {
             title: Text('Wirklich Löschen?'),
             content: Container(
               height: widget.authMethod == 'email' ? 100 : 55,
-              child: widget.authMethod == 'email' ? Column(
-                children: [
-                  Text('Geben Sie ihr Passwort als Bestätigung ein.', style: TextStyle(fontSize: 12),),
-                  TextField(
-                    obscureText: true,
-                    onSubmitted: (value) {
-                      setState(() {
-                        password = value;
-                      });
-                    },
-                  ),
-                ],
-              ) : Text('Ihr Konto wird unwiderruflich gelöscht.', style: TextStyle(fontSize: 12),),
+              child: widget.authMethod == 'email'
+                  ? Column(
+                      children: [
+                        Text(
+                          'Geben Sie ihr Passwort als Bestätigung ein.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        TextField(
+                          obscureText: true,
+                          onSubmitted: (value) {
+                            setState(() {
+                              password = value;
+                            });
+                          },
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Ihr Konto wird unwiderruflich gelöscht.',
+                      style: TextStyle(fontSize: 12),
+                    ),
             ),
             contentTextStyle: TextStyle(
               color: Colors.black54,
@@ -50,7 +58,10 @@ class _DeleteAccountItemState extends State<DeleteAccountItem> {
                   onPressed: () async {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
-                    await _authService.deleteAccount(FirebaseAuth.instance.currentUser(), password, widget.authMethod);
+                    await _authService.deleteAccount(
+                        auth.FirebaseAuth.instance.currentUser,
+                        password,
+                        widget.authMethod);
                   },
                   child: Text(
                     'Konto löschen',

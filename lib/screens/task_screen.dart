@@ -158,14 +158,13 @@ class _TaskScreenState extends State<TaskScreen> {
                           itemCount: todos.length,
                           itemBuilder: (context, index) {
                             return TodoItem(
-                              key: ValueKey(todos[index].documentID),
-                              id: todos[index].documentID,
+                              key: ValueKey(todos[index].id),
+                              id: todos[index].id,
                               title: todos[index]['title'],
                               done: todos[index]['value'],
-                              delete: () => delete(todos[index].documentID),
+                              delete: () => delete(todos[index].id),
                               toggleDone: () => toggleDone(
-                                  todos[index].documentID,
-                                  todos[index]['value']),
+                                  todos[index].id, todos[index]['value']),
                               list: widget.list,
                               priority: todos[index]['priority'],
                               dueDate: todos[index]['dueDate'],

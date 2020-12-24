@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
 import 'package:todoapp/services/database_service.dart';
@@ -29,7 +29,7 @@ class _EmailItemState extends State<EmailItem> {
   Future<void> initialize() async {
     DocumentSnapshot userData = await DatabaseService(widget.uid).getUserData();
     if (userData.data != null) {
-      email = userData.data['email'];
+      email = userData.data()['email'];
       setState(() {
         loading = false;
       });
@@ -41,7 +41,8 @@ class _EmailItemState extends State<EmailItem> {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? Container( // Loading Widget!
+        ? Container(
+            // Loading Widget!
             height: 55,
             alignment: Alignment.centerLeft,
             margin: EdgeInsets.fromLTRB(26, 0, 20, 5),
@@ -121,7 +122,8 @@ class _EmailItemState extends State<EmailItem> {
                           });
                         },
                         onSubmitted: (value) async {
-                          await _authService.changeEmail(FirebaseAuth.instance.currentUser(), email);
+                          await _authService.changeEmail(
+                              auth.FirebaseAuth.instance.currentUser, email);
                           await DatabaseService(widget.uid).updateEmail(email);
                           focus.unfocus();
                           print(email);

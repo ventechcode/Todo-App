@@ -5,6 +5,7 @@ import 'package:todoapp/widgets/todo_details/date_picker.dart';
 import 'package:todoapp/widgets/todo_details/notes_section.dart';
 import 'package:todoapp/widgets/todo_details/reminder_picker.dart';
 import 'package:todoapp/widgets/todo_details/tag_section.dart';
+import 'package:todoapp/widgets/todo_details/timestamp_section.dart';
 import 'package:todoapp/widgets/todo_details/todo_title.dart';
 
 class TodoDetailsScreen extends StatelessWidget {
@@ -28,9 +29,10 @@ class TodoDetailsScreen extends StatelessWidget {
           elevation: 0,
         ),
         body: StreamBuilder(
-          stream: DatabaseService(data['uid'], list: data['list']).todoStream(data['id']),
+          stream: DatabaseService(data['uid'], list: data['list'])
+              .todoStream(data['id']),
           builder: (context, snapshot) {
-            if(snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return Center();
             }
             return SingleChildScrollView(
@@ -52,12 +54,29 @@ class TodoDetailsScreen extends StatelessWidget {
                         ReminderPicker(
                           todoID: data['id'],
                           notificationDate: snapshot.data['reminderDate'],
-                          databaseService: DatabaseService(data['uid'], list: data['list']),
+                          databaseService: DatabaseService(
+                            data['uid'],
+                            list: data['list'],
+                          ),
                         ),
-                        CustomDatePicker(DatabaseService(data['uid'], list: data['list']), data['id'], snapshot.data['dueDate']),
-                        NotesSection(DatabaseService(data['uid'], list: data['list']), data['id']),
-                        AttachSection(DatabaseService(data['uid'], list: data['list']), data['id']),
-                        TagSection(DatabaseService(data['uid'], list: data['list']), data['id']),
+                        CustomDatePicker(
+                          DatabaseService(data['uid'], list: data['list']),
+                          data['id'],
+                          snapshot.data['dueDate'],
+                        ),
+                        NotesSection(
+                          DatabaseService(data['uid'], list: data['list']),
+                          data['id'],
+                        ),
+                        AttachSection(
+                          DatabaseService(data['uid'], list: data['list']),
+                          data['id'],
+                        ),
+                        TagSection(
+                          DatabaseService(data['uid'], list: data['list']),
+                          data['id'],
+                        ),
+                        TimestampSection(timestamp: snapshot.data['createdAt']),
                       ],
                     ),
                   ),

@@ -21,7 +21,7 @@ class Tag extends StatelessWidget {
         color: color,
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(8, 3, 4, 3),
+        padding: EdgeInsets.fromLTRB(8, 4, 4, 3),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

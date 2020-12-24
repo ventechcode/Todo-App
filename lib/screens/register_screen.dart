@@ -40,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
     KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
-      if(!visible) {
+      if (!visible) {
         _usernameNode.unfocus();
         _emailNode.unfocus();
         _passwordNode.unfocus();

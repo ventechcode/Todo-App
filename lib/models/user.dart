@@ -19,10 +19,11 @@ class User {
 
   Future<String> getPhotoUrl() async {
     DocumentSnapshot snapshot = await DatabaseService(uid).getUserData();
-    if(snapshot.data['photoUrl'] == '' || snapshot.data['photoUrl'] == null) {
+    if (snapshot.data()['photoUrl'] == '' ||
+        snapshot.data()['photoUrl'] == null) {
       return null;
     } else {
-      return snapshot.data['photoUrl'];
+      return snapshot.data()['photoUrl'];
     }
   }
 

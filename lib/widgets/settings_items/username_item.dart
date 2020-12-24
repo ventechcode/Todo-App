@@ -13,7 +13,6 @@ class UsernameItem extends StatefulWidget {
 }
 
 class _UsernameItemState extends State<UsernameItem> {
-  final TextEditingController _controller = TextEditingController();
   FocusNode focus = FocusNode();
   String username;
   bool loading = true;
@@ -27,7 +26,7 @@ class _UsernameItemState extends State<UsernameItem> {
   Future<void> initialize() async {
     DocumentSnapshot userData = await DatabaseService(widget.uid).getUserData();
     if (userData.data != null) {
-      username = userData.data['username'];
+      username = userData.data()['username'];
       setState(() {
         loading = false;
       });
@@ -39,7 +38,8 @@ class _UsernameItemState extends State<UsernameItem> {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? Container( // Loading Widget!
+        ? Container(
+            // Loading Widget!
             height: 55,
             alignment: Alignment.centerLeft,
             margin: EdgeInsets.fromLTRB(26, 0, 20, 5),
