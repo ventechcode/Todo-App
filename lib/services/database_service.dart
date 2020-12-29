@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,7 +29,7 @@ class DatabaseService {
       'notes': null,
       'gotFiles': false,
       'tags': {
-        '1': {'name': 'Priorität', 'active': false, 'color': '0xFFFFE57F'},
+        '1': {'name': 'Priorität', 'active': false, 'color': '0xFFFFD740'},
         '2': {'name': 'Wichtig', 'active': false, 'color': '0xffff4081'},
         '3': {
           'name': 'Mittlere Priorität',

@@ -11,7 +11,8 @@ class TodoTitle extends StatefulWidget {
   final bool value;
   final bool priority;
 
-  TodoTitle(this.title, this.id, this.uid, this.list, this.value, this.priority);
+  TodoTitle(
+      this.title, this.id, this.uid, this.list, this.value, this.priority);
 
   @override
   _TodoTitleState createState() => _TodoTitleState();
@@ -20,7 +21,8 @@ class TodoTitle extends StatefulWidget {
 class _TodoTitleState extends State<TodoTitle> {
   final TextEditingController _titleController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
+  final KeyboardVisibilityNotification keyboard =
+      KeyboardVisibilityNotification();
   DatabaseService _databaseService;
   bool lineThrough;
 
@@ -37,6 +39,7 @@ class _TodoTitleState extends State<TodoTitle> {
     }
     keyboard.addNewListener(onHide: () {
       _focusNode.unfocus();
+      _databaseService.updateTodoTitle(widget.id, _titleController.text);
     });
   }
 
@@ -54,8 +57,9 @@ class _TodoTitleState extends State<TodoTitle> {
       children: [
         Container(
           width: screenWidth * 0.744,
-          child: TextField(
+          child: TextFormField(
             focusNode: _focusNode,
+            autofocus: false,
             cursorColor: Colors.black,
             controller: _titleController,
             style: TextStyle(
@@ -74,8 +78,8 @@ class _TodoTitleState extends State<TodoTitle> {
               ),
             ),
             onTap: () => setState(() => lineThrough = false),
-            onSubmitted: (value) async {
-              _databaseService.updateTodoTitle(widget.id, value);
+            onFieldSubmitted: (value) async {
+              await _databaseService.updateTodoTitle(widget.id, value);
               _focusNode.unfocus();
               setState(() {
                 _titleController.text = value;

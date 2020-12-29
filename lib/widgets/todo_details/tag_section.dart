@@ -152,7 +152,7 @@ class _TagSectionState extends State<TagSection> {
                         .every((element) => element['active'] == true)
                     ? Container()
                     : Container(
-                        margin: EdgeInsets.fromLTRB(0, 1.25, 0, 8),
+                        margin: EdgeInsets.fromLTRB(0, 1.25, 0, 9),
                         child: GestureDetector(
                           onTap: () => _showTagsDialog(context),
                           child: DottedBorder(

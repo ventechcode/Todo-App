@@ -29,6 +29,7 @@ class TimestampSection extends StatelessWidget {
             _dateFormat.format(timestamp.toDate()),
             style: TextStyle(fontSize: 16),
           ),
+          //SizedBox(height: 10)
         ],
       ),
     );

@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class TodoItem extends StatelessWidget {
   final DateFormat _format = DateFormat('EE, d. MMMM');
@@ -80,6 +79,7 @@ class TodoItem extends StatelessWidget {
                     'value': done,
                     'uid': getUid(),
                     'list': list,
+                    'delete': delete,
                   });
                 },
                 leading: Container(
@@ -141,13 +141,13 @@ class TodoItem extends StatelessWidget {
                   dense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 4),
                   onTap: () async {
-                    if (gotFiles) print('test');
                     Navigator.of(context)
                         .pushNamed('/todo_details', arguments: {
                       'id': id,
                       'value': done,
                       'uid': getUid(),
                       'list': list,
+                      'delete': delete,
                     });
                   },
                   leading: Container(
