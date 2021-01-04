@@ -1,25 +1,24 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:todoapp/services/database_service.dart';
+import 'package:todoapp/services/todo_service.dart';
+import 'package:todoapp/models/todo.dart';
 
 class NotesSection extends StatefulWidget {
-  final DatabaseService databaseService;
-  final String todoId;
-  NotesSection(this.databaseService, this.todoId);
+  final Todo todo;
+  final TodoService todoService;
+
+  NotesSection({this.todo, this.todoService});
+
   @override
   _NotesSectionState createState() => _NotesSectionState();
 }
 
 class _NotesSectionState extends State<NotesSection> {
-  bool hasNotes = false;
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
+    var screenWidth = MediaQuery.of(context).size.width;
     return Container(
       margin: const EdgeInsets.only(top: 16),
       child: Column(
@@ -28,50 +27,25 @@ class _NotesSectionState extends State<NotesSection> {
           Text(
             'Notizen',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Nexa'
-            ),
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Nexa'),
           ),
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: screenWidth * 0.88,
-            child: StreamBuilder(
-              stream: widget.databaseService.todoStream(widget.todoId),
-              builder: (context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.waiting) {
-                  return DottedBorder(
-                    dashPattern: [4, 3],
-                    strokeCap: StrokeCap.round,
-                    strokeWidth: 0.88,
-                    borderType: BorderType.RRect,
-                    radius: Radius.circular(8),
-                    color: Colors.grey,
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(8, 10, 8, 10),
-                        child: Text(
-                          'Tippe, um eine neue Notiz hinzuzufügen',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                if(snapshot.data['notes'] == '' || snapshot.data['notes'] == null) {
-                  return GestureDetector(
+            child: widget.todo.notes == '' || widget.todo.notes == null
+                ? GestureDetector(
                     onTap: () {
+                      widget.todo.notes = null;
                       Navigator.of(context).pushNamed('/notes', arguments: {
-                        'title': snapshot.data['title'],
-                        'notes': null,
-                        'db_service': widget.databaseService,
-                        'todoId': snapshot.data['id'],
+                        'todo': widget.todo,
+                        'todoService': widget.todoService,
+                      }).then((notes) {
+                        setState(() {
+                          widget.todo.notes = notes;
+                        });
                       });
                     },
                     child: DottedBorder(
@@ -96,30 +70,28 @@ class _NotesSectionState extends State<NotesSection> {
                         ),
                       ),
                     ),
-                  );
-                } else {
-                  return GestureDetector(
+                  )
+                : GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed('/notes', arguments: {
-                        'title': snapshot.data['title'],
-                        'notes': snapshot.data['notes'].trim(),
-                        'db_service': widget.databaseService,
-                        'todoId': snapshot.data['id'],
+                        'todo': widget.todo,
+                        'todoService': widget.todoService,
+                      }).then((notes) {
+                        setState(() {
+                          widget.todo.notes = notes;
+                        });
                       });
                     },
                     child: Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        snapshot.data['notes'].trim(),
+                        widget.todo.notes.trim(),
                         style: TextStyle(
                           fontSize: 14,
                         ),
                       ),
                     ),
-                  );
-                }
-              },
-            ),
+                  ),
           ),
         ],
       ),

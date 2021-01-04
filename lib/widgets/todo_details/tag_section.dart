@@ -2,35 +2,21 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:todoapp/services/database_service.dart';
+import 'package:todoapp/models/todo.dart';
+import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/widgets/todo_details/tag.dart';
 
 class TagSection extends StatefulWidget {
-  final DatabaseService databaseService;
-  final String todoId;
+  final Todo todo;
+  final TodoService todoService;
 
-  TagSection(this.databaseService, this.todoId);
+  TagSection({this.todo, this.todoService});
 
   @override
   _TagSectionState createState() => _TagSectionState();
 }
 
 class _TagSectionState extends State<TagSection> {
-  Map<String, dynamic> tags = {};
-
-  @override
-  void initState() {
-    super.initState();
-    getTags();
-  }
-
-  Future getTags() async {
-    Map temp = await widget.databaseService.getTags(widget.todoId);
-    setState(() {
-      tags = temp;
-    });
-  }
-
   void _showTagsDialog(BuildContext ctx) {
     var screenHeight = MediaQuery.of(ctx).size.height;
     showModalBottomSheet(
@@ -64,41 +50,40 @@ class _TagSectionState extends State<TagSection> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    for (var tag in tags.entries)
+                    for (var tag in widget.todo.tags)
                       Container(
-                        color: Color(int.parse(tag.value['color'])),
+                        color: Color(int.parse(tag.colorString)),
                         child: ListTile(
                           onTap: () async {
                             setState(() {
                               update(() {
-                                tag.value['active'] = !tag.value['active'];
+                                tag.active = !tag.active;
                               });
                             });
-                            await widget.databaseService
-                                .updateTags(widget.todoId, tags);
+                            await widget.todoService.updateTodo(widget.todo);
                           },
                           leading: Theme(
                             data:
                                 ThemeData(unselectedWidgetColor: Colors.white),
                             child: Checkbox(
-                              checkColor: Color(int.parse(tag.value['color'])),
+                              checkColor: Color(int.parse(tag.colorString)),
                               activeColor: Colors.white,
                               focusColor: Colors.white,
                               hoverColor: Colors.white,
                               onChanged: (val) async {
                                 setState(() {
                                   update(() {
-                                    tag.value['active'] = val;
+                                    tag.active = val;
                                   });
                                 });
-                                await widget.databaseService
-                                    .updateTags(widget.todoId, tags);
+                                await widget.todoService
+                                    .updateTodo(widget.todo);
                               },
-                              value: tag.value['active'],
+                              value: tag.active,
                             ),
                           ),
                           title: Text(
-                            tag.value['name'],
+                            tag.name,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 17,
@@ -117,11 +102,11 @@ class _TagSectionState extends State<TagSection> {
     );
   }
 
-  void removeTag(String key) async {
+  void removeTag(String name) async {
     setState(() {
-      tags[key]['active'] = false;
+      widget.todo.tags.where((tag) => tag.name == name).single.active = false;
     });
-    await widget.databaseService.updateTags(widget.todoId, tags);
+    await widget.todoService.updateTodo(widget.todo);
   }
 
   @override
@@ -143,13 +128,11 @@ class _TagSectionState extends State<TagSection> {
             margin: EdgeInsets.only(top: 12),
             child: Wrap(
               children: [
-                for (var tag in tags.entries)
-                  if (tag.value['active'])
-                    Tag(tag.value['name'], Color(int.parse(tag.value['color'])),
-                        () => removeTag(tag.key)),
-                tags.values
-                        .toList()
-                        .every((element) => element['active'] == true)
+                for (var tag in widget.todo.tags)
+                  if (tag.active)
+                    Tag(tag.name, Color(int.parse(tag.colorString)),
+                        () => removeTag(tag.name)),
+                widget.todo.tags.every((tag) => tag.active == true)
                     ? Container()
                     : Container(
                         margin: EdgeInsets.fromLTRB(0, 1.25, 0, 9),

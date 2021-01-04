@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:todoapp/services/database_service.dart';
+import 'package:todoapp/services/todo_service.dart';
+import 'package:todoapp/models/todo.dart';
 
 class PriorityCheckbox extends StatefulWidget {
-  final DatabaseService databaseService;
-  final String todoID;
-  final bool priority;
-  PriorityCheckbox(this.databaseService, this.todoID, this.priority);
+  final Todo todo;
+  final TodoService todoService;
+
+  PriorityCheckbox(this.todo, this.todoService);
 
   @override
   _PriorityCheckboxState createState() => _PriorityCheckboxState();
 }
 
 class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerProviderStateMixin {
+  Todo todo;
   AnimationController _animationController;
   Animation<Color> _colorAnimation;
   Animation<double> _sizeAnimation;
@@ -24,7 +26,8 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _value = widget.priority;
+    todo = widget.todo;
+    _value = todo.priority;
 
     _animationController = AnimationController(
       duration: Duration(milliseconds: 300),
@@ -79,15 +82,19 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
             onPressed: () {
               if(case1) _value ? _animationController.forward().whenComplete(() {
                 _value = !_value;
-                widget.databaseService.togglePriority(widget.todoID, _value);
+                todo.priority = _value;
+                widget.todoService.updateTodo(todo);
               }) : _animationController.reverse().whenComplete(() {
                 _value = !_value;
-                widget.databaseService.togglePriority(widget.todoID, _value);
+                todo.priority = _value;
+                widget.todoService.updateTodo(todo);
               });
               if(case2) _value ? _animationController.reverse().whenComplete(() {
-                widget.databaseService.togglePriority(widget.todoID, _value);
+                todo.priority = _value;
+                widget.todoService.updateTodo(todo);
               }) : _animationController.forward().whenComplete(() {
-                widget.databaseService.togglePriority(widget.todoID, _value);
+                todo.priority = _value;
+                widget.todoService.updateTodo(todo);
               });
             },
             icon: Icon(

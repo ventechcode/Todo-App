@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import './models/user.dart';
 import './screens/wrapper.dart';
 import './services/auth_service.dart';
-import './screens/todo_details_screen.dart';
+import 'screens/detail_screen.dart';
 import './screens/notes_screen.dart';
 import './screens/settings_screen.dart';
 
@@ -22,13 +21,6 @@ class MyApp extends StatelessWidget {
     return StreamProvider<User>.value(
       value: AuthService().user,
       child: MaterialApp(
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: [
-          const Locale('de', 'DE'),
-        ],
         title: 'Todo-App',
         theme: ThemeData(
           canvasColor: Colors.transparent,
@@ -38,7 +30,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (_) => Wrapper(),
           '/settings': (_) => SettingsScreen(),
-          '/todo_details': (_) => TodoDetailsScreen(),
+          '/details': (_) => DetailScreen(),
         },
         onGenerateRoute: (settings) {
           var routes = {

@@ -12,8 +12,7 @@ class DatabaseService {
   final String list;
   DatabaseService(this.uid, {this.list});
 
-  final CollectionReference users =
-      FirebaseFirestore.instance.collection('users');
+  final CollectionReference users = FirebaseFirestore.instance.collection('users');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   Future addTodo(Todo todo) async {
@@ -51,8 +50,7 @@ class DatabaseService {
   }
 
   Future deleteTodoFiles(String id) async {
-    QuerySnapshot snapshot =
-        await users.doc(uid).collection(list).doc(id).collection('files').get();
+    QuerySnapshot snapshot = await users.doc(uid).collection(list).doc(id).collection('files').get();
     snapshot.docs.forEach((file) async {
       await FirebaseStorage.instance
           .ref()
@@ -151,20 +149,6 @@ class DatabaseService {
     });
   }
 
-  Future addFile(String fileName, String url, String todoId, int bytes) async {
-    return await users
-        .doc(uid)
-        .collection(list)
-        .doc(todoId)
-        .collection('files')
-        .doc(fileName)
-        .set({
-      'url': url,
-      'bytes': bytes,
-      'type': fileName.split(".")[1],
-    });
-  }
-
   Future storeImage(File image) async {
     final Reference reference =
         FirebaseStorage.instance.ref().child('users').child('$uid');
@@ -174,89 +158,10 @@ class DatabaseService {
     });
   }
 
-  Future storeFile(File file, String todoId) async {
-    String fileName = path.basename(file.path);
-    int bytes = file.lengthSync();
-    final Reference reference = FirebaseStorage.instance
-        .ref()
-        .child('users')
-        .child('$uid/$todoId')
-        .child('$fileName');
-
-    try {
-      await reference.putFile(file);
-      print('File stored.');
-    } on FirebaseException catch (e) {
-      print(e.stackTrace);
-      print(e.message);
-    }
-
-    await reference.getDownloadURL().then((url) async {
-      await addFile(fileName, url, todoId, bytes);
-    });
-  }
-
-  Future deleteFile(String fileName, String todoId) async {
-    await FirebaseStorage.instance
-        .ref()
-        .child('users')
-        .child('$uid/$todoId')
-        .child('$fileName')
-        .delete();
-    await users
-        .doc(uid)
-        .collection(list)
-        .doc(todoId)
-        .collection('files')
-        .doc(fileName)
-        .delete();
-  }
-
-  Future<List<File>> getFiles(String todoId) async {
-    List<File> files = [];
-    final Directory systemTempDir = Directory.systemTemp;
-    final Reference reference =
-        FirebaseStorage.instance.ref().child('users').child('$uid/$todoId');
-    final snapshot = await users
-        .doc(uid)
-        .collection(list)
-        .doc(todoId)
-        .collection('files')
-        .get();
-    snapshot.docs.forEach((file) {
-      File tempFile = File('${systemTempDir.path}/tmp${file.id}');
-      if (tempFile.existsSync()) {
-        tempFile.delete();
-      }
-      tempFile.create();
-      reference.child('${file.id}').writeToFile(tempFile);
-      files.add(tempFile);
-    });
-    return files;
-  }
-
-  Stream files(String todoId) {
-    return users
-        .doc(uid)
-        .collection(list)
-        .doc(todoId)
-        .collection('files')
-        .snapshots();
-  }
-
   Future updateGotFiles(String todoId, bool val) async {
     return users.doc(uid).collection(list).doc(todoId).update({
       'gotFiles': val,
     });
-  }
-
-  Stream subtasks(String todoId) {
-    return users
-        .doc(uid)
-        .collection(list)
-        .doc(todoId)
-        .collection('subtasks')
-        .snapshots();
   }
 
   Future<Map> getTags(String todoId) async {

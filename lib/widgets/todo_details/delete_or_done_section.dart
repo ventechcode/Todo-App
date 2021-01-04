@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:todoapp/services/database_service.dart';
 
 class DeleteOrDoneSection extends StatelessWidget {
   final Function delete;
-  final String todoId;
-  DeleteOrDoneSection({this.delete, this.todoId});
+  final Function toggleDone;
+  DeleteOrDoneSection({this.delete, this.toggleDone});
 
   createDeleteDialog(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -13,8 +12,7 @@ class DeleteOrDoneSection extends StatelessWidget {
         builder: (context) {
           return AlertDialog(
             title: Text('Aufgabe Löschen?'),
-            content:
-                Text('Sind Sie sicher, dass Sie den Eintrag löschen möchten?'),
+            content: Text('Sind Sie sicher, dass Sie den Eintrag löschen möchten?'),
             contentTextStyle: TextStyle(
               color: Colors.black54,
               fontSize: 14,
@@ -23,9 +21,11 @@ class DeleteOrDoneSection extends StatelessWidget {
               Container(
                 margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.037, 0),
                 child: FlatButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
+                  splashColor: Colors.transparent,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    delete();
                   },
                   child: Text(
                     'Löschen',
@@ -43,21 +43,22 @@ class DeleteOrDoneSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var screenHeight = MediaQuery.of(context).size.height;
     return Container(
       color: Colors.grey[100],
-      margin: EdgeInsets.only(top: 8),
+      margin: EdgeInsets.only(top: 6),
       child: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
               child: Container(
-                height: 55,
+                height: screenHeight * 0.08,
                 child: FlatButton.icon(
                   icon: Icon(
-                    Icons.clear,
+                    Icons.cancel_rounded,
                     color: Colors.black54,
-                    size: 26,
+                    size: 24,
                   ),
                   label: Text(
                     'Löschen',
@@ -74,18 +75,18 @@ class DeleteOrDoneSection extends StatelessWidget {
               height: 28,
               child: VerticalDivider(
                 width: 2,
-                color: Colors.grey,
+                color: Colors.grey[400],
                 thickness: 1.4,
               ),
             ),
             Expanded(
               child: Container(
-                height: 55,
+                height: screenHeight * 0.08,
                 child: FlatButton.icon(
                   icon: Icon(
-                    Icons.done,
+                    Icons.check_circle,
                     color: Colors.lightBlue,
-                    size: 26,
+                    size: 24,
                   ),
                   label: Text(
                     'Erledigt',
@@ -94,7 +95,10 @@ class DeleteOrDoneSection extends StatelessWidget {
                       color: Colors.lightBlue,
                     ),
                   ),
-                  onPressed: () => print('done'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    toggleDone();
+                  },
                 ),
               ),
             ),

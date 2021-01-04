@@ -1,40 +1,27 @@
 import 'dart:ui';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:circular_check_box/circular_check_box.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import 'package:todoapp/models/todo.dart';
+
+// TODO: überarbeiten der leiste unter dem todo titel 
 
 class TodoItem extends StatelessWidget {
+  final Todo todo;
   final DateFormat _format = DateFormat('EE, d. MMMM');
-  final String id;
-  final String title;
-  final String list;
-  final bool done;
-  final bool priority;
   final Function delete;
   final Function toggleDone;
   final ValueKey key;
-  final Timestamp dueDate;
-  final Timestamp reminderDate;
-  final String notes;
-  final bool gotFiles;
 
   TodoItem({
-    this.id,
-    this.title,
-    this.done,
     this.delete,
     this.toggleDone,
     this.key,
-    this.list,
-    this.priority,
-    this.dueDate,
-    this.reminderDate,
-    this.notes,
-    this.gotFiles,
+    this.todo,
   });
 
   String getUid() {
@@ -42,148 +29,120 @@ class TodoItem extends StatelessWidget {
   }
 
   bool gotRowData() {
-    return gotFiles ||
-        notes != null && notes != '' ||
-        dueDate != null ||
-        reminderDate != null &&
-            DateTime.now().isAfter(reminderDate.toDate()) == false;
+    return todo.hasFiles ||
+        todo.notes != null && todo.notes != '' ||
+        todo.reminderDate != null ||
+        todo.reminderDate != null &&
+            DateTime.now().isAfter(todo.reminderDate) == false;
   }
 
   bool hasDueAndReminderDate() {
-    return dueDate != null &&
-        reminderDate != null &&
-        DateTime.now().isAfter(reminderDate.toDate()) == false;
+    return todo.dueDate != null &&
+        todo.reminderDate != null &&
+        DateTime.now().isAfter(todo.reminderDate) == false;
   }
 
   bool gotOnlyFiles() {
-    return dueDate == null && reminderDate == null && notes == null ||
-        notes == '';
+    return todo.dueDate == null &&
+            todo.reminderDate == null &&
+            todo.notes == null ||
+        todo.notes == '';
   }
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
-    return done
+    return todo.value
         ? Dismissible(
             key: key,
             onDismissed: (_) => delete(),
             child: Card(
-              elevation: 1,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              elevation: 1.5,
               margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
               child: ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.symmetric(vertical: 4),
-                onTap: () async {
-                  Navigator.of(context).pushNamed('/todo_details', arguments: {
-                    'id': id,
-                    'value': done,
-                    'uid': getUid(),
-                    'list': list,
-                    'delete': delete,
-                  });
-                },
+                horizontalTitleGap: 8,
+                onTap: null,
                 leading: Container(
                   margin: const EdgeInsets.only(left: 8),
-                  child: GestureDetector(
-                    onTap: () => toggleDone(),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
-                        child: Icon(
-                          Icons.check_box,
-                          color: Colors.lightBlue,
-                          size: 28,
-                        ),
-                      ),
-                    ),
+                  child: CircularCheckBox(
+                    value: true,
+                    onChanged: (_) => toggleDone(),
+                    activeColor: Colors.lightBlue,               
                   ),
                 ),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title.trim(),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        decoration: done
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
-                      ),
-                    ),
-                  ],
+                title: Text(
+                  todo.title.trim(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey,
+                  ),
                 ),
-                trailing: done
-                    ? Container(
-                        padding: EdgeInsets.only(top: 1),
-                        child: IconButton(
-                          iconSize: 24,
-                          icon: Icon(Icons.delete),
-                          onPressed: () => delete(),
-                        ),
-                      )
-                    : null,
+                trailing: Container(
+                  margin: EdgeInsets.only(right: 3),
+                  padding: EdgeInsets.only(top: 1),
+                  child: IconButton(
+                    iconSize: 21,
+                    icon: Icon(
+                      Icons.cancel_rounded,
+                      color: Colors.grey[400],
+                    ),
+                    onPressed: () => delete(),
+                  ),
+                ),
               ),
             ),
           )
         : Container(
             child: Card(
+              clipBehavior: Clip.antiAlias,
               key: key,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
-              elevation: 1,
+              elevation: 1.5,
               child: Container(
                 child: ListTile(
-                  key: ValueKey(id),
+                  key: ValueKey(todo.id),
                   dense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 4),
+                  horizontalTitleGap: 8,
                   onTap: () async {
-                    Navigator.of(context)
-                        .pushNamed('/todo_details', arguments: {
-                      'id': id,
-                      'value': done,
-                      'uid': getUid(),
-                      'list': list,
-                      'delete': delete,
+                    Navigator.of(context).pushNamed('/details', arguments: {
+                      'todo': todo,
+                      'delete': () => delete(),
+                      'toggleDone': () => toggleDone()
                     });
                   },
                   leading: Container(
                     margin: const EdgeInsets.only(left: 8),
-                    child: GestureDetector(
-                      onTap: () => toggleDone(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(44),
-                          color: Colors.transparent,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
-                          child: Icon(
-                            Icons.check_box_outline_blank,
-                            size: 28,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                      ),
+                    child: CircularCheckBox(
+                      value: false,
+                      onChanged: (_) => toggleDone(),
+                      activeColor: Colors.lightBlue,
+                      inactiveColor: Colors.grey[600],
                     ),
                   ),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title.trim(),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          decoration: done
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
+                      Container(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Text(
+                          todo.title.trim(),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            decoration: TextDecoration.none,
+                          ),
                         ),
                       ),
-                      if (priority)
+                      if (todo.priority)
                         Container(
                           margin: EdgeInsets.only(top: 3),
                           decoration: BoxDecoration(
@@ -195,45 +154,45 @@ class TodoItem extends StatelessWidget {
                         ),
                       if (gotRowData())
                         Container(
-                          margin: priority
+                          margin: todo.priority
                               ? EdgeInsets.fromLTRB(0, 2, 5, 0)
                               : EdgeInsets.fromLTRB(0, 0, 5, 0),
                           height: 20,
                           width: screenWidth * 0.44,
                           child: Row(
                             children: [
-                              if (dueDate != null)
+                              if (todo.dueDate != null)
                                 Icon(
                                   Icons.calendar_today,
                                   size: 13,
-                                  color: dueDate.toDate().day ==
+                                  color: todo.dueDate.day ==
                                               DateTime.now().day - 1 ||
-                                          dueDate.toDate().day <
+                                          todo.dueDate.day <
                                               DateTime.now().day - 1
                                       ? Colors.red
                                       : Colors.grey[700],
                                 ),
-                              if (dueDate != null) SizedBox(width: 3),
-                              if (dueDate != null)
+                              if (todo.dueDate != null) SizedBox(width: 3),
+                              if (todo.dueDate != null)
                                 Container(
                                   margin: EdgeInsets.only(top: 1),
                                   child: Text(
-                                    _format.format(dueDate.toDate()) ==
+                                    _format.format(todo.dueDate) ==
                                             _format.format(DateTime.now())
                                         ? 'Heute'
-                                        : dueDate.toDate().day ==
+                                        : todo.dueDate.day ==
                                                 DateTime.now().day + 1
                                             ? 'Morgen'
-                                            : dueDate.toDate().day ==
+                                            : todo.dueDate.day ==
                                                     DateTime.now().day - 1
                                                 ? 'Gestern'
                                                 : _format
-                                                    .format(dueDate.toDate())
+                                                    .format(todo.dueDate)
                                                     .toString(),
                                     style: TextStyle(
-                                      color: dueDate.toDate().day ==
+                                      color: todo.dueDate.day ==
                                                   DateTime.now().day - 1 ||
-                                              dueDate.toDate().day <
+                                              todo.dueDate.day <
                                                   DateTime.now().day - 1
                                           ? Colors.red
                                           : Colors.grey[700],
@@ -252,12 +211,11 @@ class TodoItem extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              if (reminderDate != null &&
-                                  DateTime.now()
-                                          .isAfter(reminderDate.toDate()) ==
-                                      false) // got reminder date
+                              if (todo.reminderDate != null &&
+                                  DateTime.now().isAfter(todo.reminderDate) ==
+                                      false)
                                 Container(
-                                  margin: dueDate == null
+                                  margin: todo.dueDate == null
                                       ? EdgeInsets.fromLTRB(0, 0.88, 1, 0)
                                       : EdgeInsets.fromLTRB(0, 0.88, 0, 0),
                                   child: Icon(
@@ -266,22 +224,21 @@ class TodoItem extends StatelessWidget {
                                     color: Colors.grey[700],
                                   ),
                                 ),
-                              if (reminderDate != null &&
-                                  dueDate == null &&
-                                  DateTime.now()
-                                          .isAfter(reminderDate.toDate()) ==
+                              if (todo.reminderDate != null &&
+                                  todo.dueDate == null &&
+                                  DateTime.now().isAfter(todo.reminderDate) ==
                                       false) // got valid reminder and due date
                                 Container(
                                   margin: EdgeInsets.fromLTRB(2, 1, 0, 0),
                                   child: Text(
-                                    _format.format(reminderDate.toDate()) ==
+                                    _format.format(todo.reminderDate) ==
                                             _format.format(DateTime.now())
                                         ? 'Heute'
-                                        : reminderDate.toDate().day ==
+                                        : todo.reminderDate.day ==
                                                 DateTime.now().day + 1
                                             ? 'Morgen'
                                             : _format
-                                                .format(reminderDate.toDate())
+                                                .format(todo.reminderDate)
                                                 .toString(),
                                     style: TextStyle(
                                       color: Colors.grey[700],
@@ -289,12 +246,13 @@ class TodoItem extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              if ((reminderDate != null &&
+                              if ((todo.reminderDate != null &&
                                       !DateTime.now()
-                                          .isAfter(reminderDate.toDate())) ||
-                                  dueDate !=
+                                          .isAfter(todo.reminderDate)) ||
+                                  todo.dueDate !=
                                       null) // has valid notes and a reminder or due date
-                                if (notes != null && notes != '' || gotFiles)
+                                if (todo.notes != null && todo.notes != '' ||
+                                    todo.hasFiles)
                                   Container(
                                     margin: EdgeInsets.fromLTRB(1, 1.87, 1, 0),
                                     child: Transform.scale(
@@ -305,12 +263,12 @@ class TodoItem extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                              if (notes != null && notes != '')
+                              if (todo.notes != null && todo.notes != '')
                                 Container(
-                                  margin: notes != null &&
-                                              notes != '' &&
-                                              reminderDate != null ||
-                                          dueDate != null
+                                  margin: todo.notes != null &&
+                                              todo.notes != '' &&
+                                              todo.reminderDate != null ||
+                                          todo.dueDate != null
                                       ? EdgeInsets.fromLTRB(0.3, 1.44, 0, 0)
                                       : EdgeInsets.fromLTRB(0, 1, 0, 0),
                                   child: Icon(
@@ -319,7 +277,7 @@ class TodoItem extends StatelessWidget {
                                     color: Colors.grey[700],
                                   ),
                                 ),
-                              if (gotFiles)
+                              if (todo.hasFiles)
                                 Container(
                                   margin: EdgeInsets.only(top: 2),
                                   child: Icon(
@@ -331,7 +289,7 @@ class TodoItem extends StatelessWidget {
                             ],
                           ),
                         ),
-                      if (!priority) Container(),
+                      if (!todo.priority) Container(),
                     ],
                   ),
                 ),

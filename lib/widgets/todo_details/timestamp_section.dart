@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TimestampSection extends StatelessWidget {
-  final Timestamp timestamp;
+  final DateTime timestamp;
   final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
 
   TimestampSection({this.timestamp});
@@ -26,10 +25,9 @@ class TimestampSection extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Text(
-            _dateFormat.format(timestamp.toDate()),
+            _dateFormat.format(timestamp),
             style: TextStyle(fontSize: 16),
           ),
-          //SizedBox(height: 10)
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:todoapp/widgets/scroll_behavior.dart';
 
 class NotesScreen extends StatefulWidget {
   final Map data;
@@ -13,37 +14,49 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
-  bool showImg;
+  bool _showImg;
 
   @override
   void initState() {
     super.initState();
-    if (widget.data['notes'] == null || widget.data['notes'] == '') {
-      showImg = true;
+    if (widget.data['todo'].notes == null || widget.data['todo'].notes == '') {
+      _showImg = true;
     } else {
-      showImg = false;
-      _controller.text = widget.data['notes'];
+      _showImg = false;
+      _controller.text = widget.data['todo'].notes;
     }
-    keyboard.addNewListener(onHide: () {
-      _focusNode.unfocus();
-      widget.data['db_service'].updateNotes(widget.data['todoId'], _controller.text);
-      if(_controller.text.length < 1) setState(() => showImg = true);
-    });
+
+    KeyboardVisibilityNotification().addNewListener(
+      onHide: () {
+        _focusNode.unfocus();
+        widget.data['todo'].notes = _controller.text;
+        widget.data['todoService'].updateTodo(widget.data['todo']);
+        if (_controller.text.length < 1) setState(() => _showImg = true);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+    _focusNode.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.of(context).padding;
-    var screenHeight =
-        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
+          leading: BackButton(
+            color: Colors.black,
+            onPressed: () => Navigator.pop(context, _controller.text),
+          ),
           iconTheme: IconThemeData(color: Colors.black),
           title: Text(
-            widget.data['title'],
+            widget.data['todo'].title,
             style: TextStyle(
               color: Colors.black,
               fontSize: 17,
@@ -54,49 +67,61 @@ class _NotesScreenState extends State<NotesScreen> {
           elevation: 0,
         ),
         backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(21, 0, 21, 0),
-              child: Container(
-                height: screenHeight,
-                width: screenWidth,
-                child: TextField(
-                  focusNode: _focusNode,
-                  autofocus: false,
-                  controller: _controller,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  cursorColor: Colors.black,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      showImg = false;
-                    });
-                  },
-                ),
-              ),
-            ),
-            if (showImg)
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _focusNode.requestFocus();
-                      showImg = false;
-                    });
-                  },
-                  child: Container(
-                    child: SvgPicture.asset(
-                      'assets/images/notes.svg',
-                      width: screenWidth * 0.88,
+        body: WillPopScope(
+          onWillPop: () async {
+            Navigator.pop(context, _controller.text);
+            return true;
+          },
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(21, 0, 21, 12),
+                child: Container(
+                  height: screenHeight,
+                  width: screenWidth,
+                  child: ScrollConfiguration(
+                    behavior: CustomScrollBehavior(),
+                    child: TextFormField(
+                      expands: true,
+                      autofocus: false,
+                      cursorWidth: 1.5,
+                      style: TextStyle(height: 1.2),
+                      focusNode: _focusNode,
+                      controller: _controller,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      cursorColor: Colors.black54,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _showImg = false;
+                        });
+                      },
                     ),
                   ),
                 ),
               ),
-          ],
+              if (_showImg)
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _focusNode.requestFocus();
+                        _showImg = false;
+                      });
+                    },
+                    child: Container(
+                      child: SvgPicture.asset(
+                        'assets/images/notes.svg',
+                        width: screenWidth * 0.88,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

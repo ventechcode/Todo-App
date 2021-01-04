@@ -1,17 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:todoapp/services/todo_service.dart';
 
-import '../../services/database_service.dart';
+import 'package:todoapp/models/todo.dart';
 
 class ReminderPicker extends StatefulWidget {
-  final DatabaseService databaseService;
-  final Timestamp notificationDate;
-  final String todoID;
+  final Todo todo;
+  final TodoService todoService;
+  final String uid;
 
-  ReminderPicker({this.todoID, this.notificationDate, this.databaseService});
+  ReminderPicker({this.todo, this.uid, this.todoService});
 
   @override
   _ReminderPickerState createState() => _ReminderPickerState();
@@ -19,6 +19,8 @@ class ReminderPicker extends StatefulWidget {
 
 class _ReminderPickerState extends State<ReminderPicker> {
   final DateFormat _dateFormat = DateFormat('EE, d. MMMM');
+
+  Todo todo;
   DateTime _dateTime;
   DateTime _notificationDate;
   TimeOfDay _notificationTime;
@@ -26,10 +28,11 @@ class _ReminderPickerState extends State<ReminderPicker> {
   @override
   void initState() {
     super.initState();
+    todo = widget.todo;
     Intl.defaultLocale = 'de_DE';
     initializeDateFormatting('de_DE');
-    if (widget.notificationDate != null) {
-      _notificationDate = widget.notificationDate.toDate();
+    if (todo.reminderDate!= null) {
+      _notificationDate = todo.reminderDate;
       _notificationTime = TimeOfDay(
         hour: _notificationDate.hour,
         minute: _notificationDate.minute,
@@ -83,8 +86,8 @@ class _ReminderPickerState extends State<ReminderPicker> {
                             _notificationTime.hour,
                             _notificationTime.minute,
                           );
-                          widget.databaseService
-                              .updateReminderDate(widget.todoID, _dateTime);
+                          todo.reminderDate = _dateTime;
+                          widget.todoService.updateTodo(todo);
                         });
                       }
                     });
@@ -191,8 +194,8 @@ class _ReminderPickerState extends State<ReminderPicker> {
                   _dateTime = null;
                   _notificationDate = null;
                   _notificationTime = null;
-                  widget.databaseService
-                      .updateReminderDate(widget.todoID, null);
+                  todo.reminderDate = _dateTime;
+                  widget.todoService.updateTodo(todo);
                 });
               },
             ),

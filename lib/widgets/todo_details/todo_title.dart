@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/services/todo_service.dart';
+import 'package:todoapp/models/todo.dart';
 import 'package:todoapp/services/database_service.dart';
 import 'package:todoapp/widgets/todo_details/priority_checkbox.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 
 class TodoTitle extends StatefulWidget {
-  final String title;
-  final String id;
+  final Todo todo;
+  final TodoService todoService;
   final String uid;
-  final String list;
-  final bool value;
-  final bool priority;
 
-  TodoTitle(
-      this.title, this.id, this.uid, this.list, this.value, this.priority);
+  TodoTitle({this.todo, this.uid, this.todoService});
 
   @override
   _TodoTitleState createState() => _TodoTitleState();
@@ -21,25 +19,25 @@ class TodoTitle extends StatefulWidget {
 class _TodoTitleState extends State<TodoTitle> {
   final TextEditingController _titleController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final KeyboardVisibilityNotification keyboard =
-      KeyboardVisibilityNotification();
-  DatabaseService _databaseService;
+  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
+  Todo todo;
   bool lineThrough;
 
   @override
   void initState() {
     super.initState();
-    _databaseService = DatabaseService(widget.uid, list: widget.list);
-    _titleController.text = widget.title.trim();
+    todo = widget.todo;
+    _titleController.text = todo.title.trim();
     _titleController.text.trim();
-    if (widget.value) {
+    if (todo.value) {
       lineThrough = true;
     } else {
       lineThrough = false;
     }
     keyboard.addNewListener(onHide: () {
       _focusNode.unfocus();
-      _databaseService.updateTodoTitle(widget.id, _titleController.text);
+      todo.title = _titleController.text;
+      widget.todoService.updateTodo(todo);
     });
   }
 
@@ -78,12 +76,13 @@ class _TodoTitleState extends State<TodoTitle> {
               ),
             ),
             onTap: () => setState(() => lineThrough = false),
-            onFieldSubmitted: (value) async {
-              await _databaseService.updateTodoTitle(widget.id, value);
+            onFieldSubmitted: (value) {
+              todo.title = value;
+              widget.todoService.updateTodo(todo);
               _focusNode.unfocus();
               setState(() {
                 _titleController.text = value;
-                if (widget.value) {
+                if (todo.value) {
                   lineThrough = true;
                 } else {
                   lineThrough = false;
@@ -92,7 +91,7 @@ class _TodoTitleState extends State<TodoTitle> {
             },
           ),
         ),
-        PriorityCheckbox(_databaseService, widget.id, widget.priority),
+        PriorityCheckbox(todo, widget.todoService),
       ],
     );
   }

@@ -1,16 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:todoapp/services/database_service.dart';
+import 'package:todoapp/services/todo_service.dart';
+import 'package:todoapp/models/todo.dart';
 
 class CustomDatePicker extends StatefulWidget {
-  final DatabaseService databaseService;
-  final Timestamp dueDate;
-  final String todoID;
+  final Todo todo;
+  final TodoService todoService;
 
-  CustomDatePicker(this.databaseService, this.todoID, this.dueDate);
+  CustomDatePicker({this.todo, this.todoService});
 
   @override
   _CustomDatePickerState createState() => _CustomDatePickerState();
@@ -18,22 +17,26 @@ class CustomDatePicker extends StatefulWidget {
 
 class _CustomDatePickerState extends State<CustomDatePicker> {
   final DateFormat _format = DateFormat('EE, d. MMMM');
+
+  Todo todo;
   DateTime _dateTime;
 
   @override
   void initState() {
     super.initState();
+    todo = widget.todo;
     Intl.defaultLocale = 'de_DE';
     initializeDateFormatting('de_DE');
-    if (widget.dueDate != null) {
-      _dateTime = widget.dueDate.toDate();
+    if (todo.dueDate != null) {
+      _dateTime = todo.dueDate;
     }
   }
 
   void _removeDueDate() {
     setState(() {
       _dateTime = null;
-      widget.databaseService.updateDueDate(widget.todoID, null);
+      todo.dueDate = _dateTime;
+      widget.todoService.updateTodo(todo);
     });
   }
 
@@ -61,7 +64,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 ).then((value) {
                   setState(() {
                     _dateTime = value;
-                    widget.databaseService.updateDueDate(widget.todoID, _dateTime);
+                    todo.dueDate = _dateTime;
+                    widget.todoService.updateTodo(todo);
                   });
                 });
               },

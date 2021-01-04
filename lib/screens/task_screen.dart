@@ -8,7 +8,9 @@ import '../models/user.dart';
 import '../widgets/scroll_behavior.dart';
 import '../widgets/todo_item.dart';
 import '../widgets/sidebar/drawer.dart';
-import '../services/database_service.dart';
+import '../services/todo_service.dart';
+
+// TODO: Reorderable List View implementieren
 
 class TaskScreen extends StatefulWidget {
   final User user;
@@ -22,22 +24,21 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   FirebaseMessaging _firebaseMessaging;
-  DatabaseService databaseService;
-  Stream<QuerySnapshot> dataStream;
+  TodoService _todoService;
   TextEditingController _controller = TextEditingController();
-  FocusNode inputField = FocusNode();
-  bool activateBtn = false;
-  String orderBy = 'value'; // TODO: Create OrderBy Enum
+  FocusNode _inputField = FocusNode();
+  bool _activateBtn = false;
+  String orderBy = 'value'; // TODO: OrderBy Enum erstellen
 
   @override
   void initState() {
     super.initState();
-    inputField.unfocus();
-    databaseService = DatabaseService(widget.user.uid, list: widget.list);
-    dataStream = databaseService.getTodos(orderBy: orderBy);
+    _inputField.unfocus();
+    _todoService = TodoService(user: widget.user, list: widget.list);
+
     _firebaseMessaging = FirebaseMessaging();
     _firebaseMessaging.requestNotificationPermissions();
-    _firebaseMessaging.configure(
+    _firebaseMessaging.configure( // TODO: firebase messaging configuration updaten
       onLaunch: (message) {
         bool value;
         if (message['data']['value'] == 'true') {
@@ -86,26 +87,21 @@ class _TaskScreenState extends State<TaskScreen> {
     );
   }
 
-  void addTodo(String title) {
-    Todo todo = new Todo(title);
-    databaseService.addTodo(todo);
-  }
+  void addTodo(String title) => _todoService.addTodo(Todo(title, widget.list));
 
-  void delete(String id) {
-    databaseService.deleteTodo(id);
-  }
+  void delete(Todo todo) => _todoService.deleteTodo(todo); 
 
-  void toggleDone(String id, bool value) {
-    databaseService.toggleDone(id, value);
+  void toggleDone(Todo todo) {
+    todo.value = !todo.value;
+    _todoService.updateTodo(todo);
   }
 
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.of(context).padding;
-    var screenHeight =
-        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight = MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
     var screenWidth = MediaQuery.of(context).size.width;
-    if (MediaQuery.of(context).viewInsets.bottom == 0) inputField.unfocus();
+    if (MediaQuery.of(context).viewInsets.bottom == 0) _inputField.unfocus();
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -137,10 +133,9 @@ class _TaskScreenState extends State<TaskScreen> {
               Container(
                 height: screenHeight * 0.9,
                 child: StreamBuilder(
-                  stream: dataStream,
+                  stream: _todoService.getTodos(orderBy: orderBy),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting ||
-                        !snapshot.hasData) {
+                    if (!snapshot.hasData) {                   
                       return Container(
                         child: Center(
                           child: SpinKitFadingCircle(
@@ -157,20 +152,12 @@ class _TaskScreenState extends State<TaskScreen> {
                         child: ListView.builder(
                           itemCount: todos.length,
                           itemBuilder: (context, index) {
+                            Todo todo = Todo.fromDocument(todos[index]);
                             return TodoItem(
-                              key: ValueKey(todos[index].id),
-                              id: todos[index].id,
-                              title: todos[index]['title'],
-                              done: todos[index]['value'],
-                              delete: () => delete(todos[index].id),
-                              toggleDone: () => toggleDone(
-                                  todos[index].id, todos[index]['value']),
-                              list: widget.list,
-                              priority: todos[index]['priority'],
-                              dueDate: todos[index]['dueDate'],
-                              reminderDate: todos[index]['reminderDate'],
-                              notes: todos[index]['notes'],
-                              gotFiles: todos[index]['gotFiles'],
+                              key: ValueKey(todo.id),
+                              delete: () => delete(todo),
+                              toggleDone: () => toggleDone(todo),
+                              todo: todo,
                             );
                           },
                         ),
@@ -188,7 +175,7 @@ class _TaskScreenState extends State<TaskScreen> {
                     Container(
                       margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
                       child: TextFormField(
-                        focusNode: inputField,
+                        focusNode: _inputField,
                         cursorColor: Colors.black54,
                         cursorWidth: 1,
                         autofocus: false,
@@ -198,23 +185,23 @@ class _TaskScreenState extends State<TaskScreen> {
                             setState(() {
                               addTodo(value);
                               _controller.clear();
-                              activateBtn = false;
-                              inputField.unfocus();
+                              _activateBtn = false;
+                              _inputField.unfocus();
                             });
                           }
                         },
                         onChanged: (value) {
                           if (value != '') {
                             setState(() {
-                              activateBtn = true;
+                              _activateBtn = true;
                             });
                           } else {
                             setState(() {
-                              activateBtn = false;
+                              _activateBtn = false;
                             });
                           }
                         },
-                        onEditingComplete: () => inputField.unfocus(),
+                        onEditingComplete: () => _inputField.unfocus(),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
@@ -245,21 +232,21 @@ class _TaskScreenState extends State<TaskScreen> {
                       height: screenHeight * 0.07,
                     ),
                     Container(
-                      margin: EdgeInsets.only(left: 5),
+                      margin: EdgeInsets.only(left: 4),
                       child: CircleAvatar(
-                        backgroundColor:
-                            activateBtn ? Colors.lightBlue : Colors.grey,
+                        backgroundColor: _activateBtn ? Colors.lightBlue : Colors.grey,
                         radius: 21,
                         child: Center(
                           child: IconButton(
+                            splashColor: Colors.transparent,
                             onPressed: () {
                               String value = _controller.text;
                               if (value != '' && value != null) {
                                 setState(() {
                                   addTodo(value);
                                   _controller.clear();
-                                  inputField.unfocus();
-                                  activateBtn = false;
+                                  _inputField.unfocus();
+                                  _activateBtn = false;
                                 });
                               }
                             },

@@ -9,15 +9,16 @@ import 'package:flutter/widgets.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/widgets/scroll_behavior.dart';
-
-import '../../services/database_service.dart';
+import 'package:todoapp/models/todo.dart';
+import '../../services/todo_service.dart';
 
 class AttachSection extends StatefulWidget {
-  final DatabaseService databaseService;
-  final String todoId;
+  final Todo todo;
+  final TodoService todoService;
 
-  AttachSection(this.databaseService, this.todoId);
+  AttachSection({this.todo, this.todoService});
 
   @override
   _AttachSectionState createState() => _AttachSectionState();
@@ -25,8 +26,6 @@ class AttachSection extends StatefulWidget {
 
 class _AttachSectionState extends State<AttachSection> {
   final ImagePicker _imagePicker = ImagePicker();
-  List<File> files = [];
-  bool gotFiles = false;
   bool loading = false;
 
   void _pickFile() async {
@@ -39,9 +38,10 @@ class _AttachSectionState extends State<AttachSection> {
         File file = File(result.files.single.path);
         if (file.lengthSync() > 3000000) {
           print('File is too big');
+          // TODO: handle it
         } else {
-          await widget.databaseService
-              .storeFile(file, widget.todoId)
+          await widget.todoService
+              .storeFile(widget.todo, file)
               .whenComplete(() {
             setState(() {
               getFiles();
@@ -58,9 +58,10 @@ class _AttachSectionState extends State<AttachSection> {
     File pickedImage = File(picked.path);
     if (pickedImage.lengthSync() > 3000000) {
       print('Bild ist zu groß');
+      // TODO: handle it
     } else {
-      await widget.databaseService
-          .storeFile(pickedImage, widget.todoId)
+      await widget.todoService
+          .storeFile(widget.todo, pickedImage)
           .whenComplete(() {
         setState(() {
           getFiles();
@@ -74,9 +75,10 @@ class _AttachSectionState extends State<AttachSection> {
     File pickedVideo = File(picked.path);
     if (pickedVideo.lengthSync() > 3000000) {
       print('Video ist zu groß');
+      // TODO: handle it
     } else {
-      await widget.databaseService
-          .storeFile(pickedVideo, widget.todoId)
+      await widget.todoService
+          .storeFile(widget.todo, pickedVideo)
           .whenComplete(() {
         setState(() {
           getFiles();
@@ -191,20 +193,8 @@ class _AttachSectionState extends State<AttachSection> {
   }
 
   Future getFiles() async {
-    await widget.databaseService.getFiles(widget.todoId).then((files) {
-      if (this.mounted) {
-        setState(() {
-          this.files = files;
-          if (this.files.isNotEmpty) {
-            gotFiles = true;
-            widget.databaseService.updateGotFiles(widget.todoId, gotFiles);
-          } else {
-            gotFiles = false;
-            widget.databaseService.updateGotFiles(widget.todoId, gotFiles);
-          }
-        });
-      }
-    });
+    widget.todo.files = await widget.todoService.getFiles(widget.todo);
+    setState(() {});
   }
 
   @override
@@ -227,11 +217,11 @@ class _AttachSectionState extends State<AttachSection> {
                       fontFamily: 'Nexa'),
                 ),
               ),
-              if (gotFiles)
+              if (widget.todo.hasFiles)
                 SizedBox(
                   width: screenWidth * 0.5025,
                 ),
-              if (gotFiles)
+              if (widget.todo.hasFiles)
                 GestureDetector(
                   onTap: () => _showAttachDialog(context),
                   child: DottedBorder(
@@ -258,7 +248,7 @@ class _AttachSectionState extends State<AttachSection> {
                 ),
             ],
           ),
-          !gotFiles
+          !widget.todo.hasFiles
               ? Container(
                   margin: const EdgeInsets.only(top: 12),
                   width: screenWidth * 0.88,
@@ -293,7 +283,7 @@ class _AttachSectionState extends State<AttachSection> {
                   //height: 200,
                   width: screenWidth * 0.88,
                   child: StreamBuilder(
-                    stream: widget.databaseService.files(widget.todoId),
+                    stream: widget.todoService.files(widget.todo),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting ||
                           !snapshot.hasData) {
@@ -308,11 +298,11 @@ class _AttachSectionState extends State<AttachSection> {
                           ),
                           child: ListView.builder(
                             shrinkWrap: true,
-                            itemCount: files.length,
+                            itemCount: widget.todo.files.length,
                             itemBuilder: (context, index) {
                               return InkWell(
                                 onTap: () {
-                                  OpenFile.open(files[index].path);
+                                  OpenFile.open(widget.todo.files[index].path);
                                 },
                                 splashColor: Colors.grey[200],
                                 highlightColor: Colors.grey[200],
@@ -365,20 +355,25 @@ class _AttachSectionState extends State<AttachSection> {
                                               Container(
                                                 child: Text(
                                                   path
-                                                              .basename(files[
-                                                                      index]
+                                                              .basename(widget
+                                                                  .todo
+                                                                  .files[index]
                                                                   .path)
                                                               .substring(3)
                                                               .length >
                                                           24
                                                       ? path
-                                                          .basename(files[index]
+                                                          .basename(widget
+                                                              .todo
+                                                              .files[index]
                                                               .path)
                                                           .substring(3)
                                                           .replaceRange(
                                                               21,
                                                               path
-                                                                  .basename(files[
+                                                                  .basename(widget
+                                                                      .todo
+                                                                      .files[
                                                                           index]
                                                                       .path)
                                                                   .substring(3)
@@ -389,8 +384,10 @@ class _AttachSectionState extends State<AttachSection> {
                                                                           index]
                                                                       ['type'])
                                                       : path
-                                                          .basename(
-                                                              files[index].path)
+                                                          .basename(widget
+                                                              .todo
+                                                              .files[index]
+                                                              .path)
                                                           .substring(3),
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w500,
@@ -428,22 +425,21 @@ class _AttachSectionState extends State<AttachSection> {
                                               ),
                                               onPressed: () {
                                                 setState(() {
-                                                  widget.databaseService
-                                                      .deleteFile(
-                                                          path
-                                                              .basename(
-                                                                  files[index]
-                                                                      .path)
-                                                              .substring(3),
-                                                          widget.todoId);
-                                                  files.removeWhere((file) =>
-                                                      file.path ==
-                                                      files[index].path);
-                                                  if (files.isEmpty) {
-                                                    gotFiles = false;
-                                                  } else {
-                                                    gotFiles = true;
-                                                  }
+                                                  widget.todoService.deleteFile(
+                                                      widget.todo,
+                                                      path
+                                                          .basename(widget
+                                                              .todo
+                                                              .files[index]
+                                                              .path)
+                                                          .substring(3));
+                                                  widget.todo.files.removeWhere(
+                                                      (file) =>
+                                                          file.path ==
+                                                          widget
+                                                              .todo
+                                                              .files[index]
+                                                              .path);
                                                 });
                                               },
                                             ),
