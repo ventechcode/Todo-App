@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:todoapp/utils/list_utils.dart';
 
 import '../models/todo.dart';
 import '../models/user.dart';
@@ -9,8 +10,6 @@ import '../widgets/scroll_behavior.dart';
 import '../widgets/todo_item.dart';
 import '../widgets/sidebar/drawer.dart';
 import '../services/todo_service.dart';
-
-// TODO: Reorderable List View implementieren
 
 class TaskScreen extends StatefulWidget {
   final User user;
@@ -28,7 +27,7 @@ class _TaskScreenState extends State<TaskScreen> {
   TextEditingController _controller = TextEditingController();
   FocusNode _inputField = FocusNode();
   bool _activateBtn = false;
-  String orderBy = 'value'; // TODO: OrderBy Enum erstellen
+  List<DocumentSnapshot> _docs;
 
   @override
   void initState() {
@@ -38,7 +37,7 @@ class _TaskScreenState extends State<TaskScreen> {
 
     _firebaseMessaging = FirebaseMessaging();
     _firebaseMessaging.requestNotificationPermissions();
-    _firebaseMessaging.configure( // TODO: firebase messaging configuration updaten
+    _firebaseMessaging.configure(
       onLaunch: (message) {
         bool value;
         if (message['data']['value'] == 'true') {
@@ -87,9 +86,12 @@ class _TaskScreenState extends State<TaskScreen> {
     );
   }
 
-  void addTodo(String title) => _todoService.addTodo(Todo(title, widget.list));
+  void addTodo(String title) {
+    int index = _docs.length;
+    _todoService.addTodo(Todo(title, widget.list, index));
+  }
 
-  void delete(Todo todo) => _todoService.deleteTodo(todo); 
+  void delete(Todo todo) => _todoService.deleteTodo(todo);
 
   void toggleDone(Todo todo) {
     todo.value = !todo.value;
@@ -99,7 +101,8 @@ class _TaskScreenState extends State<TaskScreen> {
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.of(context).padding;
-    var screenHeight = MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight =
+        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
     var screenWidth = MediaQuery.of(context).size.width;
     if (MediaQuery.of(context).viewInsets.bottom == 0) _inputField.unfocus();
     return SafeArea(
@@ -133,9 +136,9 @@ class _TaskScreenState extends State<TaskScreen> {
               Container(
                 height: screenHeight * 0.9,
                 child: StreamBuilder(
-                  stream: _todoService.getTodos(orderBy: orderBy),
+                  stream: _todoService.getTodos(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {                   
+                    if (!snapshot.hasData) {
                       return Container(
                         child: Center(
                           child: SpinKitFadingCircle(
@@ -145,21 +148,39 @@ class _TaskScreenState extends State<TaskScreen> {
                         ),
                       );
                     }
-                    List<DocumentSnapshot> todos = snapshot.data.documents;
+
+                    _docs = snapshot.data.documents;
+
+                    List<Todo> todos = _docs.map((doc) {
+                      return Todo.fromDocument(doc);
+                    }).toList();
+
+                    todos = ListUtils.multisort(todos, [true], ['value']);             
+
+                    List<TodoItem> todoItems = todos.map((todo) {
+                      return TodoItem(
+                        key: ValueKey(todo.id),
+                        delete: () => delete(todo),
+                        toggleDone: () => toggleDone(todo),
+                        todo: todo,
+                      );
+                    }).toList();
+                                     
                     return Container(
                       child: ScrollConfiguration(
                         behavior: CustomScrollBehavior(),
-                        child: ListView.builder(
-                          itemCount: todos.length,
-                          itemBuilder: (context, index) {
-                            Todo todo = Todo.fromDocument(todos[index]);
-                            return TodoItem(
-                              key: ValueKey(todo.id),
-                              delete: () => delete(todo),
-                              toggleDone: () => toggleDone(todo),
-                              todo: todo,
-                            );
+                        child: ReorderableListView(
+                          onReorder: (oldIndex, newIndex) {
+                            if (oldIndex < newIndex) newIndex -= 1;
+                              todoItems.insert(newIndex, todoItems.removeAt(oldIndex));
+                              _docs.insert(newIndex, _docs.removeAt(oldIndex));
+                              final batch = FirebaseFirestore.instance.batch();
+                              for (int i = 0; i < _docs.length; i++) {
+                                batch.update(_docs[i].reference, {'index': i});
+                              }
+                              batch.commit();
                           },
+                          children: todoItems,
                         ),
                       ),
                     );
@@ -234,7 +255,8 @@ class _TaskScreenState extends State<TaskScreen> {
                     Container(
                       margin: EdgeInsets.only(left: 4),
                       child: CircleAvatar(
-                        backgroundColor: _activateBtn ? Colors.lightBlue : Colors.grey,
+                        backgroundColor:
+                            _activateBtn ? Colors.lightBlue : Colors.grey,
                         radius: 21,
                         child: Center(
                           child: IconButton(

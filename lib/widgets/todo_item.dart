@@ -1,14 +1,11 @@
 import 'dart:ui';
 
-import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:circular_check_box/circular_check_box.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/models/todo.dart';
-
-// TODO: überarbeiten der leiste unter dem todo titel 
 
 class TodoItem extends StatelessWidget {
   final Todo todo;
@@ -24,34 +21,8 @@ class TodoItem extends StatelessWidget {
     this.todo,
   });
 
-  String getUid() {
-    return auth.FirebaseAuth.instance.currentUser.uid;
-  }
-
-  bool gotRowData() {
-    return todo.hasFiles ||
-        todo.notes != null && todo.notes != '' ||
-        todo.reminderDate != null ||
-        todo.reminderDate != null &&
-            DateTime.now().isAfter(todo.reminderDate) == false;
-  }
-
-  bool hasDueAndReminderDate() {
-    return todo.dueDate != null &&
-        todo.reminderDate != null &&
-        DateTime.now().isAfter(todo.reminderDate) == false;
-  }
-
-  bool gotOnlyFiles() {
-    return todo.dueDate == null &&
-            todo.reminderDate == null &&
-            todo.notes == null ||
-        todo.notes == '';
-  }
-
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery.of(context).size.width;
     return todo.value
         ? Dismissible(
             key: key,
@@ -71,7 +42,7 @@ class TodoItem extends StatelessWidget {
                   child: CircularCheckBox(
                     value: true,
                     onChanged: (_) => toggleDone(),
-                    activeColor: Colors.lightBlue,               
+                    activeColor: Colors.lightBlue,
                   ),
                 ),
                 title: Text(
@@ -128,11 +99,12 @@ class TodoItem extends StatelessWidget {
                       inactiveColor: Colors.grey[600],
                     ),
                   ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  title: ListView(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
                     children: [
-                      Container(
-                        padding: EdgeInsets.only(right: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 20),
                         child: Text(
                           todo.title.trim(),
                           style: TextStyle(
@@ -142,154 +114,115 @@ class TodoItem extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (todo.priority)
-                        Container(
-                          margin: EdgeInsets.only(top: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.amber,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          height: 3.6,
-                          width: 16,
-                        ),
-                      if (gotRowData())
-                        Container(
-                          margin: todo.priority
-                              ? EdgeInsets.fromLTRB(0, 2, 5, 0)
-                              : EdgeInsets.fromLTRB(0, 0, 5, 0),
-                          height: 20,
-                          width: screenWidth * 0.44,
-                          child: Row(
-                            children: [
-                              if (todo.dueDate != null)
-                                Icon(
-                                  Icons.calendar_today,
-                                  size: 13,
+                      Row(
+                        children: [
+                          if (todo.priority)
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 3, 5, 1.5),
+                              decoration: BoxDecoration(
+                                color: Color(int.parse('0xffffd740')),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              height: 3.6,
+                              width: 16,
+                            ),
+                          for (var tag in todo.activeTags)
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 3, 5, 1.5),
+                              decoration: BoxDecoration(
+                                color: Color(int.parse(tag.colorString)),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              height: 3.6,
+                              width: 16,
+                            ),
+                        ],
+                      ),
+                      if (todo.activeTags.isNotEmpty) SizedBox(height: 3),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (todo.hasDueDate)
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.calendar_today_rounded,
+                                size: 15,
+                                color: todo.dueDate.day ==
+                                            DateTime.now().day - 1 ||
+                                        todo.dueDate.day <
+                                            DateTime.now().day - 1
+                                    ? Colors.red
+                                    : Colors.grey[700],
+                              ),
+                            ),
+                          if (todo.hasDueDate)
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0.75, 5, 0),
+                              child: Text(
+                                _format.format(todo.dueDate) ==
+                                        _format.format(DateTime.now())
+                                    ? 'Heute'
+                                    : todo.dueDate.day == DateTime.now().day + 1
+                                        ? 'Morgen'
+                                        : todo.dueDate.day ==
+                                                DateTime.now().day - 1
+                                            ? 'Gestern'
+                                            : _format
+                                                .format(todo.dueDate)
+                                                .toString(),
+                                style: TextStyle(
                                   color: todo.dueDate.day ==
                                               DateTime.now().day - 1 ||
                                           todo.dueDate.day <
                                               DateTime.now().day - 1
                                       ? Colors.red
                                       : Colors.grey[700],
+                                  fontSize: 12,
                                 ),
-                              if (todo.dueDate != null) SizedBox(width: 3),
-                              if (todo.dueDate != null)
-                                Container(
-                                  margin: EdgeInsets.only(top: 1),
-                                  child: Text(
-                                    _format.format(todo.dueDate) ==
-                                            _format.format(DateTime.now())
-                                        ? 'Heute'
-                                        : todo.dueDate.day ==
-                                                DateTime.now().day + 1
-                                            ? 'Morgen'
-                                            : todo.dueDate.day ==
-                                                    DateTime.now().day - 1
-                                                ? 'Gestern'
-                                                : _format
-                                                    .format(todo.dueDate)
-                                                    .toString(),
-                                    style: TextStyle(
-                                      color: todo.dueDate.day ==
-                                                  DateTime.now().day - 1 ||
-                                              todo.dueDate.day <
-                                                  DateTime.now().day - 1
-                                          ? Colors.red
-                                          : Colors.grey[700],
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                              ),
+                            ),
+                          if (todo.hasDueDate)
+                            if (todo.hasReminderDate ||
+                                todo.gotFiles ||
+                                todo.hasNotes)
+                              Container(
+                                margin: EdgeInsets.fromLTRB(2, 6, 6, 0),
+                                child: Icon(
+                                  Icons.circle,
+                                  size: 4,
+                                  color: Colors.grey[400],
                                 ),
-                              if (hasDueAndReminderDate())
-                                Container(
-                                  margin: EdgeInsets.fromLTRB(1, 1.87, 1, 0),
-                                  child: Transform.scale(
-                                    scale: 0.21,
-                                    child: Image(
-                                      image:
-                                          AssetImage('assets/images/dot.png'),
-                                    ),
-                                  ),
-                                ),
-                              if (todo.reminderDate != null &&
-                                  DateTime.now().isAfter(todo.reminderDate) ==
-                                      false)
-                                Container(
-                                  margin: todo.dueDate == null
-                                      ? EdgeInsets.fromLTRB(0, 0.88, 1, 0)
-                                      : EdgeInsets.fromLTRB(0, 0.88, 0, 0),
-                                  child: Icon(
-                                    Icons.notifications,
-                                    size: 15,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              if (todo.reminderDate != null &&
-                                  todo.dueDate == null &&
-                                  DateTime.now().isAfter(todo.reminderDate) ==
-                                      false) // got valid reminder and due date
-                                Container(
-                                  margin: EdgeInsets.fromLTRB(2, 1, 0, 0),
-                                  child: Text(
-                                    _format.format(todo.reminderDate) ==
-                                            _format.format(DateTime.now())
-                                        ? 'Heute'
-                                        : todo.reminderDate.day ==
-                                                DateTime.now().day + 1
-                                            ? 'Morgen'
-                                            : _format
-                                                .format(todo.reminderDate)
-                                                .toString(),
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              if ((todo.reminderDate != null &&
-                                      !DateTime.now()
-                                          .isAfter(todo.reminderDate)) ||
-                                  todo.dueDate !=
-                                      null) // has valid notes and a reminder or due date
-                                if (todo.notes != null && todo.notes != '' ||
-                                    todo.hasFiles)
-                                  Container(
-                                    margin: EdgeInsets.fromLTRB(1, 1.87, 1, 0),
-                                    child: Transform.scale(
-                                      scale: 0.21,
-                                      child: Image(
-                                        image:
-                                            AssetImage('assets/images/dot.png'),
-                                      ),
-                                    ),
-                                  ),
-                              if (todo.notes != null && todo.notes != '')
-                                Container(
-                                  margin: todo.notes != null &&
-                                              todo.notes != '' &&
-                                              todo.reminderDate != null ||
-                                          todo.dueDate != null
-                                      ? EdgeInsets.fromLTRB(0.3, 1.44, 0, 0)
-                                      : EdgeInsets.fromLTRB(0, 1, 0, 0),
-                                  child: Icon(
-                                    Icons.note_outlined,
-                                    size: 15,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              if (todo.hasFiles)
-                                Container(
-                                  margin: EdgeInsets.only(top: 2),
-                                  child: Icon(
-                                    Icons.attach_file,
-                                    size: 14,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      if (!todo.priority) Container(),
+                              ),
+                          if (todo.hasReminderDate)
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.notifications,
+                                size: 15,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          if (todo.hasNotes)
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.note_outlined,
+                                size: 15,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          if (todo.gotFiles)
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.attach_file,
+                                size: 15,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

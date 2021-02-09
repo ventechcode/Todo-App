@@ -2,8 +2,10 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:todoapp/models/todo.dart';
 import 'package:todoapp/services/todo_service.dart';
+import 'package:todoapp/widgets/scroll_behavior.dart';
 import 'package:todoapp/widgets/todo_details/tag.dart';
 
 class TagSection extends StatefulWidget {
@@ -17,17 +19,33 @@ class TagSection extends StatefulWidget {
 }
 
 class _TagSectionState extends State<TagSection> {
+  final KeyboardVisibilityNotification keyboard =
+      KeyboardVisibilityNotification();
+
+  @override
+  void initState() {
+    super.initState();
+    keyboard.addNewListener(onHide: () {
+      setState(() {
+        for (var tag in widget.todo.tags) {
+          tag.editing = false;
+          tag.focusNode.unfocus();
+        }
+      });
+    });
+  }
+
   void _showTagsDialog(BuildContext ctx) {
-    var screenHeight = MediaQuery.of(ctx).size.height;
     showModalBottomSheet(
-      isScrollControlled: true,
+      isScrollControlled: false,
       context: ctx,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, update) {
             return Container(
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
               color: Colors.transparent,
-              height: screenHeight * 0.6 + 3,
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -36,63 +54,104 @@ class _TagSectionState extends State<TagSection> {
                     topRight: const Radius.circular(16),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Center(
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        height: 6,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[600],
-                          borderRadius: BorderRadius.circular(20),
+                child: ScrollConfiguration(
+                  behavior: CustomScrollBehavior(),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Center(
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            height: 6,
+                            width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[600],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    for (var tag in widget.todo.tags)
-                      Container(
-                        color: Color(int.parse(tag.colorString)),
-                        child: ListTile(
-                          onTap: () async {
-                            setState(() {
-                              update(() {
-                                tag.active = !tag.active;
-                              });
-                            });
-                            await widget.todoService.updateTodo(widget.todo);
-                          },
-                          leading: Theme(
-                            data:
-                                ThemeData(unselectedWidgetColor: Colors.white),
-                            child: Checkbox(
-                              checkColor: Color(int.parse(tag.colorString)),
-                              activeColor: Colors.white,
-                              focusColor: Colors.white,
-                              hoverColor: Colors.white,
-                              onChanged: (val) async {
-                                setState(() {
-                                  update(() {
-                                    tag.active = val;
+                        SizedBox(height: 10),
+                        for (var tag in widget.todo.tags)
+                          Container(
+                            color: Color(int.parse(tag.colorString)),
+                            child: ListTile(
+                              leading: Theme(
+                                data: ThemeData(
+                                    unselectedWidgetColor: Colors.white),
+                                child: Checkbox(
+                                  checkColor: Color(int.parse(tag.colorString)),
+                                  activeColor: Colors.white,
+                                  focusColor: Colors.white,
+                                  hoverColor: Colors.white,
+                                  onChanged: (val) async {
+                                    setState(() {
+                                      update(() {
+                                        tag.active = val;
+                                      });
+                                    });
+                                    await widget.todoService
+                                        .updateTodo(widget.todo);
+                                  },
+                                  value: tag.active,
+                                ),
+                              ),
+                              title: GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    update(() {
+                                      tag.active = !tag.active;
+                                    });
                                   });
-                                });
-                                await widget.todoService
-                                    .updateTodo(widget.todo);
-                              },
-                              value: tag.active,
+                                  await widget.todoService
+                                      .updateTodo(widget.todo);
+                                },
+                                child: TextFormField(
+                                  focusNode: tag.focusNode,
+                                  enabled: tag.editing,
+                                  cursorColor: Colors.white,
+                                  initialValue: tag.name,
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  onFieldSubmitted: (value) async {
+                                    setState(() {
+                                      update(() {
+                                        tag.name = value;
+                                        tag.editing = false;
+                                        tag.focusNode.unfocus();
+                                      });
+                                    });
+                                    await widget.todoService
+                                        .updateTodo(widget.todo);
+                                  },
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                  size: 26,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    update(() {
+                                      tag.editing = true;
+                                      tag.focusNode.requestFocus();
+                                    });
+                                  });
+                                },
+                              ),
                             ),
                           ),
-                          title: Text(
-                            tag.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             );

@@ -36,9 +36,8 @@ class _AttachSectionState extends State<AttachSection> {
     if (result != null) {
       if (result.isSinglePick) {
         File file = File(result.files.single.path);
-        if (file.lengthSync() > 3000000) {
-          print('File is too big');
-          // TODO: handle it
+        if (file.lengthSync() > 5000000) {
+          createFileToBigError();
         } else {
           await widget.todoService
               .storeFile(widget.todo, file)
@@ -56,9 +55,8 @@ class _AttachSectionState extends State<AttachSection> {
     var picked = await _imagePicker.getImage(
         source: ImageSource.camera, imageQuality: 88);
     File pickedImage = File(picked.path);
-    if (pickedImage.lengthSync() > 3000000) {
-      print('Bild ist zu groß');
-      // TODO: handle it
+    if (pickedImage.lengthSync() > 5000000) {
+      createFileToBigError();
     } else {
       await widget.todoService
           .storeFile(widget.todo, pickedImage)
@@ -73,9 +71,8 @@ class _AttachSectionState extends State<AttachSection> {
   void _pickVideo() async {
     var picked = await _imagePicker.getVideo(source: ImageSource.camera);
     File pickedVideo = File(picked.path);
-    if (pickedVideo.lengthSync() > 3000000) {
-      print('Video ist zu groß');
-      // TODO: handle it
+    if (pickedVideo.lengthSync() > 5000000) {
+      createFileToBigError();
     } else {
       await widget.todoService
           .storeFile(widget.todo, pickedVideo)
@@ -94,6 +91,37 @@ class _AttachSectionState extends State<AttachSection> {
     return ((bytes / pow(1000, i)).toStringAsFixed(decimals)) +
         ' ' +
         suffixes[i];
+  }
+
+  createFileToBigError() {
+    var screenWidth = MediaQuery.of(context).size.height;
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Colors.white,
+      content: Container(
+        height: screenWidth * 0.05,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 24,
+              color: Colors.lightBlue,
+            ),
+            SizedBox(
+              width: 8,
+            ),
+            Text(
+              'Die Dateigröße überschreitet 5 Megabyte',
+              style: TextStyle(
+                color: Colors.lightBlue,
+              ),
+            ),
+          ],
+        ),
+      ),
+      duration: Duration(milliseconds: 3500),
+    ));
   }
 
   void _showAttachDialog(BuildContext ctx) {
@@ -193,8 +221,12 @@ class _AttachSectionState extends State<AttachSection> {
   }
 
   Future getFiles() async {
-    widget.todo.files = await widget.todoService.getFiles(widget.todo);
+    this.widget.todo.files = await widget.todoService.getFiles(widget.todo);
     setState(() {});
+    if (this.widget.todo.hasFiles) {
+      this.widget.todo.gotFiles = true;
+      this.widget.todoService.updateTodo(this.widget.todo);
+    }
   }
 
   @override
@@ -423,7 +455,7 @@ class _AttachSectionState extends State<AttachSection> {
                                                 color: Colors.grey[700],
                                                 size: 23,
                                               ),
-                                              onPressed: () {
+                                              onPressed: () async {
                                                 setState(() {
                                                   widget.todoService.deleteFile(
                                                       widget.todo,
@@ -440,6 +472,18 @@ class _AttachSectionState extends State<AttachSection> {
                                                               .todo
                                                               .files[index]
                                                               .path);
+                                                  if (!this
+                                                      .widget
+                                                      .todo
+                                                      .hasFiles) {
+                                                    this.widget.todo.gotFiles =
+                                                        false;
+                                                    this
+                                                        .widget
+                                                        .todoService
+                                                        .updateTodo(
+                                                            this.widget.todo);
+                                                  }
                                                 });
                                               },
                                             ),

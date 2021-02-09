@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/models/todo.dart';
-import 'package:todoapp/services/database_service.dart';
 import 'package:todoapp/widgets/todo_details/priority_checkbox.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 

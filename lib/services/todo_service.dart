@@ -39,7 +39,7 @@ class TodoService {
 
   // Returns a stream of the todo query.
   Stream<QuerySnapshot> getTodos({String orderBy}) =>
-      _todos.orderBy(orderBy).snapshots();
+      _todos.orderBy('index').snapshots();
 
   // Returns a stream of the todo document.
   Stream<DocumentSnapshot> stream(Todo todo) => _todos.doc(todo.id).snapshots();

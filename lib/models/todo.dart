@@ -19,8 +19,10 @@ class Todo {
   String _notes;
   List<Tag> _tags = [];
   List<File> _files = [];
+  bool gotFiles = false;
+  int _index;
 
-  Todo(this._title, this._list)
+  Todo(this._title, this._list, this._index)
       : this._id = Uuid().v4(),
         this._createdAt = DateTime.now(),
         this._value = false,
@@ -28,7 +30,6 @@ class Todo {
         this._notes = '',
         this._deviceToken = '',
         this._tags = [
-          Tag('Priority', '0xffffd740', false),
           Tag('Wichtig', '0xffff4081', false),
           Tag('Mittlere Priorität', '0xffe0e0e0', false),
           Tag('Nicht kritisch', '0xff9575cd', false),
@@ -54,8 +55,11 @@ class Todo {
     this._value = snapshot.data()['value'];
     this._priority = snapshot.data()['priority'];
     this._notes = snapshot.data()['notes'];
-    snapshot.data()['tags'].forEach((tag) =>
-        {this._tags.add(Tag.fromDocument(tag))});
+    snapshot
+        .data()['tags']
+        .forEach((tag) => {this._tags.add(Tag.fromDocument(tag))});
+    this.gotFiles = snapshot.data()['gotFiles'];
+    this._index = snapshot.data()['index'];
   }
 
   Future<Map<String, dynamic>> toDocument() async {
@@ -71,6 +75,25 @@ class Todo {
       'deviceToken': await _firebaseMessaging.getToken(),
       'notes': notes,
       'tags': _tags.map((tag) => tag.toDocument()).toList(),
+      'gotFiles': gotFiles,
+      'index': index,
+    };
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'list': list,
+      'title': title,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'priority': priority,
+      'dueDate': dueDate,
+      'reminderDate': reminderDate,
+      'value': value,
+      'notes': notes,
+      'tags': _tags.map((tag) => tag.toDocument()).toList(),
+      'gotFiles': gotFiles,
+      'index': index,
     };
   }
 
@@ -83,10 +106,23 @@ class Todo {
   bool get priority => _priority;
   String get notes => _notes;
   String get deviceToken => _deviceToken;
-  bool get hasFiles => _files.isEmpty ? false : true;
+  bool get hasDueDate => _dueDate != null;
+  bool get hasReminderDate => _reminderDate != null;
+  bool get hasNotes => _notes != null && _notes != '';
+  bool get hasFiles => _files.isNotEmpty;
   String get list => _list;
   List<Tag> get tags => _tags;
+  List<Tag> get activeTags => _tags.where((tag) => tag.active == true).toList();
   List<File> get files => _files;
+  int get index => _index;
+
+  dynamic get(String property) {
+    if(this.toMap().containsKey(property)) {
+      if(property == 'value') return value ? 1 : 0;
+      return this.toMap()[property];
+    }
+    throw ArgumentError('Property $property not found!');
+  }
 
   set title(String value) {
     if (value.isNotEmpty) {
