@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todoapp/utils/list_utils.dart';
@@ -10,6 +9,7 @@ import '../widgets/scroll_behavior.dart';
 import '../widgets/todo_item.dart';
 import '../widgets/sidebar/drawer.dart';
 import '../services/todo_service.dart';
+import '../services/local_notification_service.dart';
 
 class TaskScreen extends StatefulWidget {
   final User user;
@@ -22,7 +22,6 @@ class TaskScreen extends StatefulWidget {
 }
 
 class _TaskScreenState extends State<TaskScreen> {
-  FirebaseMessaging _firebaseMessaging;
   TodoService _todoService;
   TextEditingController _controller = TextEditingController();
   FocusNode _inputField = FocusNode();
@@ -35,55 +34,19 @@ class _TaskScreenState extends State<TaskScreen> {
     _inputField.unfocus();
     _todoService = TodoService(user: widget.user, list: widget.list);
 
-    _firebaseMessaging = FirebaseMessaging();
-    _firebaseMessaging.requestNotificationPermissions();
-    _firebaseMessaging.configure(
-      onLaunch: (message) {
-        bool value;
-        if (message['data']['value'] == 'true') {
-          value = true;
-        } else if (message['data']['value'] == 'false') {
-          value = false;
-        }
-        Navigator.of(context).pushNamed('/todo_details', arguments: {
-          'id': message['data']['id'],
-          'value': value,
-          'uid': widget.user.uid,
-          'list': widget.list,
-        });
-        return;
-      },
-      onMessage: (message) {
-        bool value;
-        if (message['data']['value'] == 'true') {
-          value = true;
-        } else if (message['data']['value'] == 'false') {
-          value = false;
-        }
-        Navigator.of(context).pushNamed('/todo_details', arguments: {
-          'id': message['data']['id'],
-          'value': value,
-          'uid': widget.user.uid,
-          'list': widget.list,
-        });
-        return;
-      },
-      onResume: (message) {
-        bool value;
-        if (message['data']['value'] == 'true') {
-          value = true;
-        } else if (message['data']['value'] == 'false') {
-          value = false;
-        }
-        Navigator.of(context).pushNamed('/todo_details', arguments: {
-          'id': message['data']['id'],
-          'value': value,
-          'uid': widget.user.uid,
-          'list': widget.list,
-        });
-        return;
-      },
-    );
+    localNotificationService.setOnNotificationClick((payload) async {
+      List<Todo> todos = _docs.map((doc) {
+        return Todo.fromDocument(doc);
+      }).toList();
+
+      Todo todo = todos.where((todo) => todo.id == payload).single;
+
+      Navigator.of(context).pushNamed('/details', arguments: {
+        'todo': todo,
+        'delete': () => delete(todo),
+        'toggleDone': () => toggleDone(todo)
+      });
+    });
   }
 
   void addTodo(String title) {
@@ -155,7 +118,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       return Todo.fromDocument(doc);
                     }).toList();
 
-                    todos = ListUtils.multisort(todos, [true], ['value']);             
+                    todos = ListUtils.multisort(todos, [true], ['value']);
 
                     List<TodoItem> todoItems = todos.map((todo) {
                       return TodoItem(
@@ -165,20 +128,21 @@ class _TaskScreenState extends State<TaskScreen> {
                         todo: todo,
                       );
                     }).toList();
-                                     
+
                     return Container(
                       child: ScrollConfiguration(
                         behavior: CustomScrollBehavior(),
                         child: ReorderableListView(
                           onReorder: (oldIndex, newIndex) {
                             if (oldIndex < newIndex) newIndex -= 1;
-                              todoItems.insert(newIndex, todoItems.removeAt(oldIndex));
-                              _docs.insert(newIndex, _docs.removeAt(oldIndex));
-                              final batch = FirebaseFirestore.instance.batch();
-                              for (int i = 0; i < _docs.length; i++) {
-                                batch.update(_docs[i].reference, {'index': i});
-                              }
-                              batch.commit();
+                            todoItems.insert(
+                                newIndex, todoItems.removeAt(oldIndex));
+                            _docs.insert(newIndex, _docs.removeAt(oldIndex));
+                            final batch = FirebaseFirestore.instance.batch();
+                            for (int i = 0; i < _docs.length; i++) {
+                              batch.update(_docs[i].reference, {'index': i});
+                            }
+                            batch.commit();
                           },
                           children: todoItems,
                         ),

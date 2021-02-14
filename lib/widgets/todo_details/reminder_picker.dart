@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:todoapp/services/local_notification_service.dart';
 import 'package:todoapp/services/todo_service.dart';
-
 import 'package:todoapp/models/todo.dart';
 
 class ReminderPicker extends StatefulWidget {
@@ -19,29 +19,14 @@ class ReminderPicker extends StatefulWidget {
 
 class _ReminderPickerState extends State<ReminderPicker> {
   final DateFormat _dateFormat = DateFormat('EE, d. MMMM');
-
-  Todo todo;
   DateTime _dateTime;
-  DateTime _notificationDate;
-  TimeOfDay _notificationTime;
 
   @override
   void initState() {
     super.initState();
-    todo = widget.todo;
     Intl.defaultLocale = 'de_DE';
     initializeDateFormatting('de_DE');
-    if (todo.reminderDate!= null) {
-      _notificationDate = todo.reminderDate;
-      _notificationTime = TimeOfDay(
-        hour: _notificationDate.hour,
-        minute: _notificationDate.minute,
-      );
-    }
-  }
-
-  double toDouble(TimeOfDay timeOfDay) {
-    return timeOfDay.hour + timeOfDay.minute / 60.0;
+    _dateTime = widget.todo.reminderDate;
   }
 
   @override
@@ -54,7 +39,7 @@ class _ReminderPickerState extends State<ReminderPicker> {
       children: [
         Container(
           margin: EdgeInsets.only(top: 16),
-          width: _notificationDate != null && _notificationTime != null
+          width: _dateTime != null && _dateTime != null
               ? screenWidth * 0.715
               : screenWidth * 0.88,
           height: screenHeight * 0.09,
@@ -70,25 +55,19 @@ class _ReminderPickerState extends State<ReminderPicker> {
                   lastDate: DateTime(2119),
                 ).then((value) {
                   if (value != null) {
-                    _notificationDate = value;
+                    _dateTime = value;
                     showTimePicker(
                       helpText: 'Uhrzeit auswählen',
                       initialTime: TimeOfDay.now(),
                       context: context,
-                    ).then((value) {
+                    ).then((value) async {
                       if (value != null) {
                         setState(() {
-                          _notificationTime = value;
-                          _dateTime = DateTime(
-                            _notificationDate.year,
-                            _notificationDate.month,
-                            _notificationDate.day,
-                            _notificationTime.hour,
-                            _notificationTime.minute,
-                          );
-                          todo.reminderDate = _dateTime;
-                          widget.todoService.updateTodo(todo);
+                          _dateTime = DateTime(_dateTime.year, _dateTime.month, _dateTime.day, value.hour, value.minute);
+                          widget.todo.reminderDate = _dateTime;
+                          widget.todoService.updateTodo(widget.todo);                         
                         });
+                        await localNotificationService.scheduleNotification(widget.todo, _dateTime);
                       }
                     });
                   }
@@ -96,7 +75,7 @@ class _ReminderPickerState extends State<ReminderPicker> {
               },
               child: Row(
                 children: [
-                  _notificationDate == null || _notificationTime == null
+                  _dateTime == null
                       ? Icon(
                           Icons.notifications,
                           size: 31,
@@ -105,16 +84,14 @@ class _ReminderPickerState extends State<ReminderPicker> {
                       : Icon(
                           Icons.notifications,
                           size: 31,
-                          color: toDouble(_notificationTime) <
-                                      toDouble(TimeOfDay.now()) &&
-                                  DateTime.now().isAfter(_notificationDate)
+                          color: DateTime.now().isAfter(_dateTime)
                               ? Colors.grey[700]
                               : Colors.lightBlue,
                         ),
                   SizedBox(
                     width: 8,
                   ),
-                  _notificationDate == null || _notificationTime == null
+                  _dateTime == null 
                       ? Container(
                           margin: const EdgeInsets.only(left: 6),
                           child: Text(
@@ -134,33 +111,28 @@ class _ReminderPickerState extends State<ReminderPicker> {
                             children: [
                               Text(
                                 'Erinnerung um ' +
-                                    _notificationTime.format(context),
+                                    TimeOfDay(hour: _dateTime.hour, minute: _dateTime.minute).format(context) + ' Uhr',
                                 style: TextStyle(
-                                  color: toDouble(_notificationTime) <
-                                              toDouble(TimeOfDay.now()) &&
-                                          DateTime.now()
-                                              .isAfter(_notificationDate)
+                                  color: DateTime.now().isAfter(_dateTime)
                                       ? Colors.grey[700]
                                       : Colors.lightBlue,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 3.5),
                               Container(
                                 margin: const EdgeInsets.only(left: 0.5),
                                 child: Text(
-                                  _dateFormat.format(_notificationDate) ==
+                                  _dateFormat.format(_dateTime) ==
                                           _dateFormat.format(DateTime.now())
                                       ? 'Heute'
-                                      : _notificationDate.day ==
-                                              DateTime.now().day + 1
+                                      : _dateTime.day == DateTime.now().day + 1 && _dateTime.month == DateTime.now().month && _dateTime.year == DateTime.now().year
                                           ? 'Morgen'
-                                          : _notificationDate.day ==
-                                                  DateTime.now().day - 1
+                                          : _dateTime.day == DateTime.now().day - 1 && _dateTime.month == DateTime.now().month && _dateTime.year == DateTime.now().year
                                               ? 'Gestern'
                                               : _dateFormat
-                                                  .format(_notificationDate),
+                                                  .format(_dateTime),
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 13,
@@ -175,7 +147,7 @@ class _ReminderPickerState extends State<ReminderPicker> {
             ),
           ),
         ),
-        if (_notificationDate != null && _notificationTime != null)
+        if (_dateTime != null)
           Container(
             margin: EdgeInsets.fromLTRB(0, 16, 0, 0),
             width: screenWidth * 0.165,
@@ -189,14 +161,13 @@ class _ReminderPickerState extends State<ReminderPicker> {
                 size: 23,
                 color: Colors.grey[700],
               ),
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   _dateTime = null;
-                  _notificationDate = null;
-                  _notificationTime = null;
-                  todo.reminderDate = _dateTime;
-                  widget.todoService.updateTodo(todo);
+                  widget.todo.reminderDate = _dateTime;
+                  widget.todoService.updateTodo(widget.todo);                 
                 });
+                await localNotificationService.cancelNotification(widget.todo);
               },
             ),
           ),

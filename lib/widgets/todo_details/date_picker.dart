@@ -43,7 +43,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.of(context).padding;
-    var screenHeight = MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
+    var screenHeight =
+        MediaQuery.of(context).size.height - (kToolbarHeight + padding.top);
     var screenWidth = MediaQuery.of(context).size.width;
     return Row(
       children: [
@@ -62,11 +63,23 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   firstDate: DateTime(2003),
                   lastDate: DateTime(2119),
                 ).then((value) {
-                  setState(() {
+                  if (value != null) {
                     _dateTime = value;
-                    todo.dueDate = _dateTime;
-                    widget.todoService.updateTodo(todo);
-                  });
+                    showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay(hour: 24, minute: 0),
+                      helpText: 'Uhrzeit auswählen',
+                    ).then((value) {
+                      if (value != null) {
+                        setState(() {
+                          _dateTime = DateTime(_dateTime.year, _dateTime.month,
+                              _dateTime.day, value.hour, value.minute);
+                          todo.dueDate = _dateTime;
+                          widget.todoService.updateTodo(todo);
+                        });
+                      }
+                    });
+                  }
                 });
               },
               child: Row(
@@ -80,7 +93,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                       : Icon(
                           Icons.date_range,
                           size: 31,
-                          color: _dateTime.day == DateTime.now().day -1 || _dateTime.day < DateTime.now().day -1 ? Colors.red : Colors.lightBlue,
+                          color: _dateTime.day == DateTime.now().day - 1 ||
+                                  _dateTime.day < DateTime.now().day - 1
+                              ? Colors.red
+                              : Colors.lightBlue,
                         ),
                   SizedBox(
                     width: 8,
@@ -99,18 +115,45 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                         )
                       : Container(
                           margin: const EdgeInsets.only(left: 6),
-                          child: Text(
-                            _format.format(_dateTime) ==
-                                    _format.format(DateTime.now())
-                                ? 'Fällig Heute'
-                                : _dateTime.day == DateTime.now().day + 1
-                                    ? 'Fällig Morgen'
-                                    : _dateTime.day == DateTime.now().day -1 ? 'Fällig Gestern' : 'Fällig ' + _format.format(_dateTime).toString(),
-                            style: TextStyle(
-                              color: _dateTime.day == DateTime.now().day - 1 || _dateTime.day < DateTime.now().day -1 ? Colors.red : Colors.lightBlue,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _format.format(_dateTime) ==
+                                        _format.format(DateTime.now())
+                                    ? 'Fällig Heute'
+                                    : _dateTime.day == DateTime.now().day + 1
+                                        ? 'Fällig Morgen'
+                                        : _dateTime.day ==
+                                                DateTime.now().day - 1
+                                            ? 'Fällig Gestern'
+                                            : 'Fällig ' +
+                                                _format
+                                                    .format(_dateTime)
+                                                    .toString(),
+                                style: TextStyle(
+                                  color: _dateTime.day ==
+                                              DateTime.now().day - 1 ||
+                                          _dateTime.day < DateTime.now().day - 1
+                                      ? Colors.red
+                                      : Colors.lightBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 3.5),
+                              Container(
+                                margin: const EdgeInsets.only(left: 0.5),
+                                child: Text(
+                                  TimeOfDay(hour: _dateTime.hour, minute: _dateTime.minute).format(context) + ' Uhr',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                 ],
@@ -118,19 +161,23 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
             ),
           ),
         ),
-        if(_dateTime != null)
+        if (_dateTime != null)
           Container(
             margin: const EdgeInsets.only(top: 12),
-            width:  screenWidth * 0.165,
+            width: screenWidth * 0.165,
             height: screenHeight * 0.09,
             color: Colors.grey[100],
             child: IconButton(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
-              icon: Icon(Icons.clear, size: 23, color: Colors.grey[700],),
+              icon: Icon(
+                Icons.clear,
+                size: 23,
+                color: Colors.grey[700],
+              ),
               onPressed: _removeDueDate,
             ),
-        ),
+          ),
       ],
     );
   }

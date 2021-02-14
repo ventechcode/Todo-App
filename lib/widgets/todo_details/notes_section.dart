@@ -87,7 +87,7 @@ class _NotesSectionState extends State<NotesSection> {
                       child: Text(
                         widget.todo.notes.trim(),
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                     ),
