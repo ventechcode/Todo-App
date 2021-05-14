@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,8 +18,8 @@ class ProfileSection extends StatefulWidget {
 
 class _ProfileSectionState extends State<ProfileSection> {
   final ImagePicker picker = ImagePicker();
-  File _pickedImageFile;
-  String imgUrl;
+  late File _pickedImageFile;
+  String? imgUrl;
 
   // Creates the Dialog where you can choose between Camera and Gallery
   _createPhotoDialog() {
@@ -35,7 +36,7 @@ class _ProfileSectionState extends State<ProfileSection> {
                 children: [
                   Container(
                     margin: EdgeInsets.only(right: 15),
-                    child: FlatButton.icon(
+                    child: TextButton.icon(
                       icon: Icon(
                         Icons.photo_camera,
                         size: 36,
@@ -50,7 +51,7 @@ class _ProfileSectionState extends State<ProfileSection> {
                   ),
                   Container(
                     padding: EdgeInsets.only(right: 24),
-                    child: FlatButton.icon(
+                    child: TextButton.icon(
                       icon: Icon(
                         Icons.photo_library,
                         size: 36,
@@ -77,11 +78,9 @@ class _ProfileSectionState extends State<ProfileSection> {
   void _pickImage(ImageSource source) async {
     final pickedImage = await picker.getImage(source: source, imageQuality: 88, maxWidth: 150);
     setState(() {
-      _pickedImageFile = File(pickedImage.path);
+      _pickedImageFile = File(pickedImage!.path);
     });
-    print('Image has been picked.');
     imgUrl = await DatabaseService(widget.user.uid).storeImage(_pickedImageFile);
-    print('Image has been stored in Database.');
   }
 
   @override
@@ -114,24 +113,22 @@ class _ProfileSectionState extends State<ProfileSection> {
               onTap: _createPhotoDialog,
               child: CircleAvatar(
                 radius: 28,
-                backgroundColor: snapshot.data['photoUrl'] == ''
+                backgroundColor: (snapshot.data as DocumentSnapshot)['photoUrl'] == ''
                     ? Colors.black54
                     : Colors.transparent,
-                child: snapshot.data['photoUrl'] == ''
+                child: (snapshot.data as DocumentSnapshot)['photoUrl'] == ''
                     ? IconButton(
                         icon: Icon(Icons.add_a_photo),
                         color: Colors.white,
                         onPressed: _createPhotoDialog,
                       )
                     : null,
-                backgroundImage: widget.user.getPhotoUrl() != null
-                    ? NetworkImage(snapshot.data['photoUrl'])
-                    : null,
+                backgroundImage: NetworkImage((snapshot.data as DocumentSnapshot)['photoUrl']),
               ),
             ),
-            title: Text(snapshot.data['username']),
+            title: Text((snapshot.data as DocumentSnapshot)['username']),
             subtitle: Text(
-              snapshot.data['email'],
+              (snapshot.data as DocumentSnapshot)['email'],
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -145,8 +142,8 @@ class _ProfileSectionState extends State<ProfileSection> {
                     '/settings',
                     arguments: {
                       'uid': widget.user.uid,
-                      'authMethod': snapshot.data['authMethod'],
-                      'email': snapshot.data['email'],
+                      'authMethod': (snapshot.data as DocumentSnapshot)['authMethod'],
+                      'email': (snapshot.data as DocumentSnapshot)['email'],
                     },
                   );
                 },

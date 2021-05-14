@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 class Notification {
   final int id;
   final String title;
@@ -7,9 +5,9 @@ class Notification {
   final String payload;
 
   Notification({
-    @required this.id,
-    @required this.title,
-    @required this.body,
-    @required this.payload,
+    required this.id,
+    required this.title,
+    required this.body,
+    required this.payload,
   });
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
 
 class DeleteAccountItem extends StatefulWidget {
-  final String authMethod;
+  final String? authMethod;
 
   DeleteAccountItem(this.authMethod);
 
@@ -54,7 +54,7 @@ class _DeleteAccountItemState extends State<DeleteAccountItem> {
             actions: <Widget>[
               Container(
                 margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.037, 0),
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () async {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

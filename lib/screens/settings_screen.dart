@@ -9,7 +9,7 @@ import 'package:todoapp/widgets/settings_items/username_item.dart';
 class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final Map userData = ModalRoute.of(context).settings.arguments;
+    final Map userData = ModalRoute.of(context)!.settings.arguments as Map<dynamic, dynamic>;
     var screenHeight = MediaQuery.of(context).size.height - kToolbarHeight;
     return SafeArea(
       child: Scaffold(

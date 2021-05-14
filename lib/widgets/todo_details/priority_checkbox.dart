@@ -4,8 +4,8 @@ import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/models/todo.dart';
 
 class PriorityCheckbox extends StatefulWidget {
-  final Todo todo;
-  final TodoService todoService;
+  final Todo? todo;
+  final TodoService? todoService;
 
   PriorityCheckbox(this.todo, this.todoService);
 
@@ -14,12 +14,12 @@ class PriorityCheckbox extends StatefulWidget {
 }
 
 class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerProviderStateMixin {
-  Todo todo;
-  AnimationController _animationController;
-  Animation<Color> _colorAnimation;
-  Animation<double> _sizeAnimation;
-  Animation _curve;
-  bool _value;
+  Todo? todo;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _sizeAnimation;
+  late Animation _curve;
+  bool? _value;
   bool case1 = false;
   bool case2 = false;
 
@@ -27,7 +27,7 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
   void initState() {
     super.initState();
     todo = widget.todo;
-    _value = todo.priority;
+    _value = todo!.priority;
 
     _animationController = AnimationController(
       duration: Duration(milliseconds: 300),
@@ -36,8 +36,8 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
 
     _curve = CurvedAnimation(parent: _animationController, curve: Curves.slowMiddle);
 
-    _colorAnimation = _value ? ColorTween(begin: Colors.amber, end: Colors.grey[400]).animate(_curve) : ColorTween(begin: Colors.grey[400], end: Colors.amber).animate(_curve);
-    if(_value) case1 = true;
+    _colorAnimation = _value! ? ColorTween(begin: Colors.amber, end: Colors.grey[400]).animate(_curve as Animation<double>) : ColorTween(begin: Colors.grey[400], end: Colors.amber).animate(_curve as Animation<double>);
+    if(_value!) case1 = true;
     else case2 = true;
     
     _sizeAnimation = TweenSequence(
@@ -51,7 +51,7 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
           weight: 50,
         ),
       ],
-    ).animate(_curve);
+    ).animate(_curve as Animation<double>);
 
     _animationController.addStatusListener((status) {
       if(status == AnimationStatus.completed) {
@@ -80,21 +80,21 @@ class _PriorityCheckboxState extends State<PriorityCheckbox> with SingleTickerPr
             splashRadius: 1,
             tooltip: 'Wichtig',
             onPressed: () {
-              if(case1) _value ? _animationController.forward().whenComplete(() {
-                _value = !_value;
-                todo.priority = _value;
-                widget.todoService.updateTodo(todo);
+              if(case1) _value! ? _animationController.forward().whenComplete(() {
+                _value = !_value!;
+                todo!.priority = _value!;
+                widget.todoService!.updateTodo(todo!);
               }) : _animationController.reverse().whenComplete(() {
-                _value = !_value;
-                todo.priority = _value;
-                widget.todoService.updateTodo(todo);
+                _value = !_value!;
+                todo!.priority = _value!;
+                widget.todoService!.updateTodo(todo!);
               });
-              if(case2) _value ? _animationController.reverse().whenComplete(() {
-                todo.priority = _value;
-                widget.todoService.updateTodo(todo);
+              if(case2) _value! ? _animationController.reverse().whenComplete(() {
+                todo!.priority = _value!;
+                widget.todoService!.updateTodo(todo!);
               }) : _animationController.forward().whenComplete(() {
-                todo.priority = _value;
-                widget.todoService.updateTodo(todo);
+                todo!.priority = _value!;
+                widget.todoService!.updateTodo(todo!);
               });
             },
             icon: Icon(

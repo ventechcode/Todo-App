@@ -10,8 +10,8 @@ import 'package:todoapp/models/notification.dart';
 import 'package:todoapp/models/todo.dart';
 
 class LocalNotificationService {
-  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
-  InitializationSettings _initSettings;
+  late FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
+  late InitializationSettings _initSettings;
 
   LocalNotificationService.init() {
     _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -22,7 +22,7 @@ class LocalNotificationService {
   void _requestIOSPermission() {
     _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
+            IOSFlutterLocalNotificationsPlugin>()!
         .requestPermissions(alert: true, sound: true, badge: true);
   }
 
@@ -59,7 +59,7 @@ class LocalNotificationService {
     NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails, iOS: iosNotificationDetails);
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
-      Uuid().parse(todo.id).reduce((a, b) => a + b),
+      Uuid.parse(todo.id).reduce((a, b) => a + b),
       'Erinnerung',
       todo.title,
       tz.TZDateTime.from(scheduleTime, tz.local),  
@@ -73,7 +73,7 @@ class LocalNotificationService {
   }
 
   Future<void> cancelNotification(Todo todo) async {
-    int id = Uuid().parse(todo.id).reduce((a, b) => a + b);
+    int id = Uuid.parse(todo.id).reduce((a, b) => a + b);
     await _flutterLocalNotificationsPlugin.cancel(id);
     print('Canceled notification for ${todo.id}');
   }

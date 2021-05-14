@@ -6,8 +6,8 @@ import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/models/todo.dart';
 
 class NotesSection extends StatefulWidget {
-  final Todo todo;
-  final TodoService todoService;
+  final Todo? todo;
+  final TodoService? todoService;
 
   NotesSection({this.todo, this.todoService});
 
@@ -35,16 +35,16 @@ class _NotesSectionState extends State<NotesSection> {
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: screenWidth * 0.88,
-            child: widget.todo.notes == '' || widget.todo.notes == null
+            child: widget.todo!.notes == '' || widget.todo!.notes == null
                 ? GestureDetector(
                     onTap: () {
-                      widget.todo.notes = null;
+                      widget.todo!.notes = null;
                       Navigator.of(context).pushNamed('/notes', arguments: {
                         'todo': widget.todo,
                         'todoService': widget.todoService,
                       }).then((notes) {
                         setState(() {
-                          widget.todo.notes = notes;
+                          widget.todo!.notes = notes as String?;
                         });
                       });
                     },
@@ -78,14 +78,14 @@ class _NotesSectionState extends State<NotesSection> {
                         'todoService': widget.todoService,
                       }).then((notes) {
                         setState(() {
-                          widget.todo.notes = notes;
+                          widget.todo!.notes = notes as String?;
                         });
                       });
                     },
                     child: Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        widget.todo.notes.trim(),
+                        widget.todo!.notes!.trim(),
                         style: TextStyle(
                           fontSize: 16,
                         ),

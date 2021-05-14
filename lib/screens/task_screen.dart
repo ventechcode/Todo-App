@@ -22,11 +22,11 @@ class TaskScreen extends StatefulWidget {
 }
 
 class _TaskScreenState extends State<TaskScreen> {
-  TodoService _todoService;
+  late TodoService _todoService;
   TextEditingController _controller = TextEditingController();
   FocusNode _inputField = FocusNode();
   bool _activateBtn = false;
-  List<DocumentSnapshot> _docs;
+  List<DocumentSnapshot>? _docs;
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _TaskScreenState extends State<TaskScreen> {
     _todoService = TodoService(user: widget.user, list: widget.list);
 
     localNotificationService.setOnNotificationClick((payload) async {
-      List<Todo> todos = _docs.map((doc) {
+      List<Todo> todos = _docs!.map((doc) {
         return Todo.fromDocument(doc);
       }).toList();
 
@@ -50,7 +50,7 @@ class _TaskScreenState extends State<TaskScreen> {
   }
 
   void addTodo(String title) {
-    int index = _docs.length;
+    int index = _docs!.length;
     _todoService.addTodo(Todo(title, widget.list, index));
   }
 
@@ -112,13 +112,13 @@ class _TaskScreenState extends State<TaskScreen> {
                       );
                     }
 
-                    _docs = snapshot.data.documents;
+                    _docs = (snapshot.data! as QuerySnapshot).docs;
 
-                    List<Todo> todos = _docs.map((doc) {
+                    List<Todo> todos = _docs!.map((doc) {
                       return Todo.fromDocument(doc);
                     }).toList();
 
-                    todos = ListUtils.multisort(todos, [true], ['value']);
+                    todos = ListUtils.multisort(todos, [true], ['value']) as List<Todo>;
 
                     List<TodoItem> todoItems = todos.map((todo) {
                       return TodoItem(
@@ -137,10 +137,10 @@ class _TaskScreenState extends State<TaskScreen> {
                             if (oldIndex < newIndex) newIndex -= 1;
                             todoItems.insert(
                                 newIndex, todoItems.removeAt(oldIndex));
-                            _docs.insert(newIndex, _docs.removeAt(oldIndex));
+                            _docs!.insert(newIndex, _docs!.removeAt(oldIndex));
                             final batch = FirebaseFirestore.instance.batch();
-                            for (int i = 0; i < _docs.length; i++) {
-                              batch.update(_docs[i].reference, {'index': i});
+                            for (int i = 0; i < _docs!.length; i++) {
+                              batch.update(_docs![i].reference, {'index': i});
                             }
                             batch.commit();
                           },
@@ -165,7 +165,7 @@ class _TaskScreenState extends State<TaskScreen> {
                         cursorWidth: 1,
                         autofocus: false,
                         controller: _controller,
-                        onFieldSubmitted: (value) {
+                        onFieldSubmitted: (String? value) {
                           if (value != '' && value != null) {
                             setState(() {
                               addTodo(value);
@@ -227,7 +227,7 @@ class _TaskScreenState extends State<TaskScreen> {
                             splashColor: Colors.transparent,
                             onPressed: () {
                               String value = _controller.text;
-                              if (value != '' && value != null) {
+                              if (value != '') {
                                 setState(() {
                                   addTodo(value);
                                   _controller.clear();

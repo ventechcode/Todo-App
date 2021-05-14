@@ -19,7 +19,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<User>.value(
+    return StreamProvider<User?>.value(
+      initialData: null,
       value: AuthService().user,
       child: MaterialApp(
         title: 'Todo-App',
@@ -35,10 +36,10 @@ class MyApp extends StatelessWidget {
         },
         onGenerateRoute: (settings) {
           var routes = {
-            '/notes': (_) => NotesScreen(settings.arguments),
+            '/notes': (_) => NotesScreen(settings.arguments as Map<dynamic, dynamic>?),
           };
-          WidgetBuilder builder = routes[settings.name];
-          return MaterialPageRoute(builder: (ctx) => builder(ctx));
+          WidgetBuilder? builder = routes[settings.name!];
+          return MaterialPageRoute(builder: (ctx) => builder!(ctx));
         },
         localizationsDelegates: [GlobalMaterialLocalizations.delegate],
         supportedLocales: [const Locale('de'), const Locale('en')],

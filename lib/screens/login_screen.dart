@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:todoapp/fieldtype.dart';
 
 import '../screens/loading_screen.dart';
@@ -9,7 +9,7 @@ import '../widgets/custom_textfield.dart';
 import '../widgets/social_login.dart';
 
 class LoginScreen extends StatefulWidget {
-  final Function toggleView;
+  final Function? toggleView;
 
   LoginScreen({this.toggleView});
 
@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
           actions: <Widget>[
             Container(
               margin: EdgeInsets.only(right: screenWidth * 0.028),
-              child: FlatButton(
+              child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(_resetEmailController.text.trim());
                 },
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (value != null && value != '') {
         bool result = await _authService.sendPasswordReset(value);
         if (result == false) {
-          _scaffoldKey.currentState.showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               duration: Duration(milliseconds: 3610),
               content: Container(
@@ -143,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         } else {
-          _scaffoldKey.currentState.showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               duration: Duration(milliseconds: 3610),
               content: Container(
@@ -179,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
+    KeyboardVisibilityController().onChange.listen((bool visible) {
       if (!visible) {
         _emailNode.unfocus();
         _passwordNode.unfocus();
@@ -334,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: _enableBtn
                                 ? () async {
                                     setState(() => loading = true);
@@ -350,8 +350,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                   }
                                 : null,
-                            disabledColor: Colors.grey[100],
-                            color: Colors.transparent,
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+                                    if(states.contains(MaterialState.disabled)) {
+                                      return Colors.grey[100]!;
+                                    }
+                                    return Colors.transparent;
+                                  })
+                                ),
                             child: Text(
                               _btnText,
                               style: TextStyle(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
 
 class LogoutItem extends StatefulWidget {
-  final String uid;
+  final String? uid;
 
   LogoutItem(this.uid);
 
@@ -29,7 +29,7 @@ class _LogoutItemState extends State<LogoutItem> {
             actions: <Widget>[
               Container(
                 margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.037, 0),
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () async {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

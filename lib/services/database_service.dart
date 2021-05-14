@@ -7,15 +7,15 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/todo.dart';
 
 class DatabaseService {
-  final String uid;
-  final String list;
+  final String? uid;
+  final String? list;
   DatabaseService(this.uid, {this.list});
 
   final CollectionReference users = FirebaseFirestore.instance.collection('users');
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future addTodo(Todo todo) async {
-    return await users.doc(uid).collection(list).doc(todo.id).set({
+    return await users.doc(uid).collection(list!).doc(todo.id).set({
       'id': todo.id,
       'title': todo.title,
       'value': todo.value,
@@ -44,12 +44,12 @@ class DatabaseService {
 
   Future deleteTodo(String id) async {
     deleteTodoFiles(id).whenComplete(() async {
-      return await users.doc(uid).collection(list).doc(id).delete();
+      return await users.doc(uid).collection(list!).doc(id).delete();
     });
   }
 
   Future deleteTodoFiles(String id) async {
-    QuerySnapshot snapshot = await users.doc(uid).collection(list).doc(id).collection('files').get();
+    QuerySnapshot snapshot = await users.doc(uid).collection(list!).doc(id).collection('files').get();
     snapshot.docs.forEach((file) async {
       await FirebaseStorage.instance
           .ref()
@@ -60,41 +60,41 @@ class DatabaseService {
   }
 
   Future toggleDone(String id, bool value) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'value': !value,
     });
   }
 
   Future togglePriority(String id, bool priority) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'priority': priority,
     });
   }
 
   Future updateDueDate(String id, DateTime dueDate) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'dueDate': dueDate,
     });
   }
 
   Future updateReminderDate(String id, DateTime reminderDate) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'reminderDate': reminderDate,
     });
   }
 
   Future updateNotes(String id, String notes) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'notes': notes.trim(),
     });
   }
 
-  Stream<QuerySnapshot> getTodos({String orderBy}) {
-    return users.doc(uid).collection(list).orderBy(orderBy).snapshots();
+  Stream<QuerySnapshot> getTodos({required String orderBy}) {
+    return users.doc(uid).collection(list!).orderBy(orderBy).snapshots();
   }
 
   Future addUser(
-      String username, String email, String photoUrl, String authMethod) async {
+      String? username, String? email, String? photoUrl, String authMethod) async {
     return await users.doc(uid).set({
       'username': username,
       'email': email,
@@ -121,22 +121,22 @@ class DatabaseService {
   }
 
   Stream<DocumentSnapshot> todoStream(String id) {
-    return users.doc(uid).collection(list).doc(id).snapshots();
+    return users.doc(uid).collection(list!).doc(id).snapshots();
   }
 
   Future updateTodoTitle(String id, String title) async {
-    return await users.doc(uid).collection(list).doc(id).update({
+    return await users.doc(uid).collection(list!).doc(id).update({
       'title': title,
     });
   }
 
-  Future updateUsername(String username) async {
+  Future updateUsername(String? username) async {
     return await users.doc(uid).update({
       'username': username,
     });
   }
 
-  Future updateEmail(String newEmail) async {
+  Future updateEmail(String? newEmail) async {
     return await users.doc(uid).update({
       'email': newEmail,
     });
@@ -158,19 +158,19 @@ class DatabaseService {
   }
 
   Future updateGotFiles(String todoId, bool val) async {
-    return users.doc(uid).collection(list).doc(todoId).update({
+    return users.doc(uid).collection(list!).doc(todoId).update({
       'gotFiles': val,
     });
   }
 
-  Future<Map> getTags(String todoId) async {
+  Future<Map?> getTags(String todoId) async {
     DocumentSnapshot todo =
-        await users.doc(uid).collection(list).doc(todoId).get();
-    return todo.data()['tags'];
+        await users.doc(uid).collection(list!).doc(todoId).get();
+    return (todo.data() as Map)['tags'];
   }
 
   Future<void> updateTags(String todoId, Map tags) async {
-    return await users.doc(uid).collection(list).doc(todoId).update({
+    return await users.doc(uid).collection(list!).doc(todoId).update({
       'tags': tags,
     });
   }

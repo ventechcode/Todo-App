@@ -1,16 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:flutter/foundation.dart';
 import 'package:todoapp/services/database_service.dart';
 
 class User {
   final String uid;
-  final String email;
-  String userName;
+  final String? email;
+  String? userName;
 
   User({
-    @required this.uid,
-    @required this.email,
+    required this.uid,
+    required this.email,
     this.userName,
   });
 
@@ -23,21 +22,21 @@ class User {
     return uid;
   }
 
-  Future<String> getPhotoUrl() async {
+  Future<String?> getPhotoUrl() async {
     DocumentSnapshot snapshot = await DatabaseService(uid).getUserData();
-    if (snapshot.data()['photoUrl'] == '' ||
-        snapshot.data()['photoUrl'] == null) {
+    if ((snapshot.data() as Map)['photoUrl'] == '' ||
+        (snapshot.data() as Map)['photoUrl'] == null) {
       return null;
     } else {
-      return snapshot.data()['photoUrl'];
+      return (snapshot.data() as Map)['photoUrl'];
     }
   }
 
-  set username(String username) {
+  set username(String? username) {
     userName = username;
   }
 
-  String get username {
+  String? get username {
     return userName;
   }
 }

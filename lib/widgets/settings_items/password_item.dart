@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/services/auth_service.dart';
 
 class PasswordItem extends StatefulWidget {
-  final String email;
+  final String? email;
 
   PasswordItem(this.email);
 
@@ -13,7 +13,7 @@ class PasswordItem extends StatefulWidget {
 class _PasswordItemState extends State<PasswordItem> {
   final AuthService _authService = AuthService();
   FocusNode focus = FocusNode();
-  String password;
+  String? password;
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +37,9 @@ class _PasswordItemState extends State<PasswordItem> {
               ),
               GestureDetector(
                 onTap: () async {
-                  bool result = await _authService.sendPasswordReset(widget.email);
-                  if(result != null)
-                  Scaffold.of(context).showSnackBar(
+                  bool result = await _authService.sendPasswordReset(widget.email!);
+                  if(result)
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       duration: Duration(milliseconds: 3610),
                       content: Container(

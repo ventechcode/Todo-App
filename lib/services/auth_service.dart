@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todoapp/services/database_service.dart';
-import 'package:flutter_twitter/flutter_twitter.dart';
+import 'package:twitter_login/entity/auth_result.dart';
+import 'package:twitter_login/twitter_login.dart';
 
 import '../models/user.dart';
 
@@ -10,19 +11,20 @@ class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TwitterLogin _twitterLogin = TwitterLogin(
-    consumerKey: 'uZc5N8JN9SZRmt6pvtxD8GbjX',
-    consumerSecret: 'cf9dAmUqaPBYQ8672lT3kiaqz7pcZwtDBjHZBUTAeroichqxcJ',
+    apiKey: 'uZc5N8JN9SZRmt6pvtxD8GbjX',
+    apiSecretKey: 'cf9dAmUqaPBYQ8672lT3kiaqz7pcZwtDBjHZBUTAeroichqxcJ',
+    redirectURI: 'twittersdk://',
   );
 
   // Sign Up with Email & Password
-  Future<User> signUp(String username, String email, String password) async {
+  Future<User?> signUp(String username, String email, String password) async {
     try {
       auth.UserCredential result =
           await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      auth.User fbUser = result.user;
+      auth.User fbUser = result.user!;
       await DatabaseService(fbUser.uid).addUser(username, email, null, 'email');
       return _convertFirebaseUser(fbUser);
     } catch (e) {
@@ -32,14 +34,14 @@ class AuthService {
   }
 
   // Sign In with Email & Password
-  Future<User> signIn(String email, String password) async {
+  Future<User?> signIn(String email, String password) async {
     try {
       auth.UserCredential result =
           await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      auth.User fbUser = result.user;
+      auth.User? fbUser = result.user;
       return _convertFirebaseUser(fbUser);
     } catch (e) {
       print(e.toString());
@@ -48,10 +50,10 @@ class AuthService {
   }
 
   // Sign In with Google
-  Future<User> googleSignIn() async {
+  Future<User?> googleSignIn() async {
     try {
-      GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
 
       auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
@@ -60,7 +62,7 @@ class AuthService {
 
       auth.UserCredential result =
           await _firebaseAuth.signInWithCredential(credential);
-      auth.User fbUser = result.user;
+      auth.User fbUser = result.user!;
 
       if (await DatabaseService(fbUser.uid).isUserExisting() == false) {
         await DatabaseService(fbUser.uid).addUser(
@@ -74,16 +76,16 @@ class AuthService {
   }
 
   // Sign In with Twitter
-  Future<User> twitterSignIn() async {
-    final TwitterLoginResult loginResult = await _twitterLogin.authorize();
+  Future<User?> twitterSignIn() async {
+    final AuthResult loginResult = await _twitterLogin.login();
     try {
       if (loginResult.status == TwitterLoginStatus.loggedIn) {
         auth.AuthCredential credential = auth.TwitterAuthProvider.credential(
-          accessToken: loginResult.session.token,
-          secret: loginResult.session.secret,
+          accessToken: loginResult.authToken!,
+          secret: loginResult.authTokenSecret!,
         );
         auth.User fbUser =
-            (await _firebaseAuth.signInWithCredential(credential)).user;
+            (await _firebaseAuth.signInWithCredential(credential)).user!;
         if (await DatabaseService(fbUser.uid).isUserExisting() == false) {
           await DatabaseService(fbUser.uid).addUser(
               fbUser.displayName, fbUser.email, fbUser.photoURL, 'twitter');
@@ -101,14 +103,14 @@ class AuthService {
   }
 
   // User Authentication Stream
-  Stream<User> get user {
+  Stream<User?> get user {
     return _firebaseAuth
         .authStateChanges()
-        .map((auth.User fbUser) => _convertFirebaseUser(fbUser));
+        .map((auth.User? fbUser) => _convertFirebaseUser(fbUser));
   }
 
   // Convert auth.User into User
-  User _convertFirebaseUser(auth.User user) {
+  User? _convertFirebaseUser(auth.User? user) {
     return user != null
         ? User(
             uid: user.uid,
@@ -122,7 +124,6 @@ class AuthService {
   Future<Null> signOut() async {
     await _firebaseAuth.signOut();
     await _googleSignIn.signOut();
-    await _twitterLogin.logOut();
   }
 
   // Reset User password
@@ -148,10 +149,10 @@ class AuthService {
   }
 
   Future deleteAccount(
-      auth.User fbUser, String password, String authMethod) async {
+      auth.User? fbUser, String password, String? authMethod) async {
     if (authMethod == 'email') {
       auth.AuthCredential credential = auth.EmailAuthProvider.credential(
-          email: fbUser.email, password: password);
+          email: fbUser!.email!, password: password);
       fbUser.reauthenticateWithCredential(credential).whenComplete(() async {
         await fbUser.delete();
         await FirebaseFirestore.instance
@@ -160,14 +161,14 @@ class AuthService {
             .delete();
       });
     } else if (authMethod == 'google') {
-      GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
 
       auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
         accessToken: googleAuth.accessToken,
       );
-      fbUser.reauthenticateWithCredential(credential).whenComplete(() async {
+      fbUser!.reauthenticateWithCredential(credential).whenComplete(() async {
         await fbUser.delete();
         await FirebaseFirestore.instance
             .collection('users')
@@ -175,12 +176,12 @@ class AuthService {
             .delete();
       });
     } else if (authMethod == 'twitter') {
-      TwitterLoginResult loginResult = await _twitterLogin.authorize();
+      AuthResult loginResult = await _twitterLogin.login();
       auth.AuthCredential credential = auth.TwitterAuthProvider.credential(
-        accessToken: loginResult.session.token,
-        secret: loginResult.session.secret,
+        accessToken: loginResult.authToken!,
+        secret: loginResult.authTokenSecret!,
       );
-      fbUser.reauthenticateWithCredential(credential).whenComplete(() async {
+      fbUser!.reauthenticateWithCredential(credential).whenComplete(() async {
         await fbUser.delete();
         await FirebaseFirestore.instance
             .collection('users')

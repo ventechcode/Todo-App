@@ -6,7 +6,7 @@ import 'package:todoapp/services/database_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class EmailItem extends StatefulWidget {
-  final String uid;
+  final String? uid;
 
   EmailItem(this.uid);
 
@@ -17,7 +17,7 @@ class EmailItem extends StatefulWidget {
 class _EmailItemState extends State<EmailItem> {
   final AuthService _authService = AuthService();
   FocusNode focus = FocusNode();
-  String email;
+  String? email;
   bool loading = true;
 
   @override
@@ -28,8 +28,8 @@ class _EmailItemState extends State<EmailItem> {
 
   Future<void> initialize() async {
     DocumentSnapshot userData = await DatabaseService(widget.uid).getUserData();
-    if (userData.data != null) {
-      email = userData.data()['email'];
+    if (userData.data() != null) {
+      email = (userData.data() as Map)['email'];
       setState(() {
         loading = false;
       });
@@ -99,9 +99,9 @@ class _EmailItemState extends State<EmailItem> {
                       child: TextField(
                         controller:
                             TextEditingController.fromValue(TextEditingValue(
-                          text: email,
+                          text: email!,
                           selection:
-                              TextSelection.collapsed(offset: email.length),
+                              TextSelection.collapsed(offset: email!.length),
                         )),
                         focusNode: focus,
                         decoration: InputDecoration(
@@ -123,7 +123,7 @@ class _EmailItemState extends State<EmailItem> {
                         },
                         onSubmitted: (value) async {
                           await _authService.changeEmail(
-                              auth.FirebaseAuth.instance.currentUser, email);
+                              auth.FirebaseAuth.instance.currentUser!, email!);
                           await DatabaseService(widget.uid).updateEmail(email);
                           focus.unfocus();
                           print(email);

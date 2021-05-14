@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/fieldtype.dart';
 
 class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String lblText;
-  final FieldType fieldType;
-  final Icon suffixIcon;
-  final TextInputType keyboardType;
-  final FocusNode focusNode;
+  final TextEditingController? controller;
+  final String? lblText;
+  final FieldType? fieldType;
+  final Icon? suffixIcon;
+  final TextInputType? keyboardType;
+  final FocusNode? focusNode;
 
   CustomTextField({
     this.lblText,
@@ -19,7 +19,7 @@ class CustomTextField extends StatelessWidget {
   });
 
   String get content {
-    return controller.text;
+    return controller!.text;
   }
 
   @override
@@ -47,7 +47,7 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           focusedErrorBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: Colors.red[600],
+              color: Colors.red[600]!,
               style: BorderStyle.solid,
               width: 1,
             ),

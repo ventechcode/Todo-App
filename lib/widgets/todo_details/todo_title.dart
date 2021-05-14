@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/models/todo.dart';
 import 'package:todoapp/widgets/todo_details/priority_checkbox.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 
 class TodoTitle extends StatefulWidget {
-  final Todo todo;
-  final TodoService todoService;
-  final String uid;
+  final Todo? todo;
+  final TodoService? todoService;
+  final String? uid;
 
   TodoTitle({this.todo, this.uid, this.todoService});
 
@@ -18,25 +18,26 @@ class TodoTitle extends StatefulWidget {
 class _TodoTitleState extends State<TodoTitle> {
   final TextEditingController _titleController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final KeyboardVisibilityNotification keyboard = KeyboardVisibilityNotification();
-  Todo todo;
-  bool lineThrough;
+  Todo? todo;
+  late bool lineThrough;
 
   @override
   void initState() {
     super.initState();
     todo = widget.todo;
-    _titleController.text = todo.title.trim();
+    _titleController.text = todo!.title.trim();
     _titleController.text.trim();
-    if (todo.value) {
+    if (todo!.value) {
       lineThrough = true;
     } else {
       lineThrough = false;
     }
-    keyboard.addNewListener(onHide: () {
-      _focusNode.unfocus();
-      todo.title = _titleController.text;
-      widget.todoService.updateTodo(todo);
+    KeyboardVisibilityController().onChange.listen((bool visible) {
+      if (!visible) {
+        _focusNode.unfocus();
+        todo!.title = _titleController.text;
+        widget.todoService!.updateTodo(todo!);
+      }
     });
   }
 
@@ -44,7 +45,6 @@ class _TodoTitleState extends State<TodoTitle> {
   void dispose() {
     super.dispose();
     _titleController.dispose();
-    keyboard.dispose();
   }
 
   @override
@@ -76,12 +76,12 @@ class _TodoTitleState extends State<TodoTitle> {
             ),
             onTap: () => setState(() => lineThrough = false),
             onFieldSubmitted: (value) {
-              todo.title = value;
-              widget.todoService.updateTodo(todo);
+              todo!.title = value;
+              widget.todoService!.updateTodo(todo!);
               _focusNode.unfocus();
               setState(() {
                 _titleController.text = value;
-                if (todo.value) {
+                if (todo!.value) {
                   lineThrough = true;
                 } else {
                   lineThrough = false;

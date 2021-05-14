@@ -16,10 +16,10 @@ import 'package:todoapp/services/todo_service.dart';
 class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> data = ModalRoute.of(context).settings.arguments;
+    final Map<String, dynamic> data = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final Todo todo = data['todo'];
-    final Function delete = data['delete'];
-    final Function toggleDone = data['toggleDone'];
+    final Function? delete = data['delete'];
+    final Function? toggleDone = data['toggleDone'];
     final User user = Provider.of<User>(context);
     return SafeArea(
       child: Scaffold(
@@ -84,8 +84,8 @@ class DetailScreen extends StatelessWidget {
               ),
             ),
             DeleteOrDoneSection(
-              delete: () => delete(),
-              toggleDone: () => toggleDone(),
+              delete: () => delete!(),
+              toggleDone: () => toggleDone!(),
             ),
           ],
         ),

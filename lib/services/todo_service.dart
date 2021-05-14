@@ -9,12 +9,12 @@ import '../models/todo.dart';
 
 /// This class handles backend operations for Todo-Items.
 class TodoService {
-  final User user;
-  final String list;
-  CollectionReference _todos;
+  final User? user;
+  final String? list;
+  late CollectionReference _todos;
 
   TodoService({this.user, this.list}) {
-    String collectionPath = 'users/${user.uid}/$list';
+    String collectionPath = 'users/${user!.uid}/$list';
     _todos = FirebaseFirestore.instance.collection(collectionPath);
   }
 
@@ -29,8 +29,8 @@ class TodoService {
   }
 
   // Updates the todo in the database.
-  Future<void> updateTodo(Todo todo) async {
-    if((await _todos.doc(todo.id).get()).exists) {
+  Future<void> updateTodo(Todo? todo) async {
+    if((await _todos.doc(todo!.id).get()).exists) {
       await _todos.doc(todo.id).update(await todo.toDocument());
     } else {
       todo = null;
@@ -38,7 +38,7 @@ class TodoService {
   }  
 
   // Returns a stream of the todo query.
-  Stream<QuerySnapshot> getTodos({String orderBy}) =>
+  Stream<QuerySnapshot> getTodos({String? orderBy}) =>
       _todos.orderBy('index').snapshots();
 
   // Returns a stream of the todo document.
@@ -62,7 +62,7 @@ class TodoService {
     final Reference reference = FirebaseStorage.instance
         .ref()
         .child('users')
-        .child('${user.uid}/${todo.id}')
+        .child('${user!.uid}/${todo.id}')
         .child('$fileName');
 
     try {
@@ -83,7 +83,7 @@ class TodoService {
     final Reference reference = FirebaseStorage.instance
         .ref()
         .child('users')
-        .child('${user.uid}/${todo.id}');
+        .child('${user!.uid}/${todo.id}');
 
     final snapshot = await _todos.doc(todo.id).collection('files').get();
 
@@ -109,7 +109,7 @@ class TodoService {
     await FirebaseStorage.instance
         .ref()
         .child('users')
-        .child('${user.uid}/${todo.id}')
+        .child('${user!.uid}/${todo.id}')
         .child('$fileName')
         .delete();
     await _todos.doc(todo.id).collection('files').doc(fileName).delete();
@@ -121,7 +121,7 @@ class TodoService {
     snapshot.docs.forEach((file) async {
       await FirebaseStorage.instance
           .ref()
-          .child('users/${user.uid}/${todo.id}/${file.id}')
+          .child('users/${user!.uid}/${todo.id}/${file.id}')
           .delete();
       await file.reference.delete();
     });

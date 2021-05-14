@@ -8,26 +8,26 @@ import 'package:uuid/uuid.dart';
 class Todo {
   final String _id;
   final DateTime _createdAt;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final String _deviceToken;
   final String _list;
   String _title;
-  DateTime _dueDate;
-  DateTime _reminderDate;
-  bool _value;
-  bool _priority;
-  String _notes;
+  DateTime? dueDate;
+  DateTime? reminderDate;
+  bool value;
+  bool priority;
+  String? notes;
   List<Tag> _tags = [];
-  List<File> _files = [];
+  List<File> files = [];
   bool gotFiles = false;
   int _index;
 
   Todo(this._title, this._list, this._index)
       : this._id = Uuid().v4(),
         this._createdAt = DateTime.now(),
-        this._value = false,
-        this._priority = false,
-        this._notes = '',
+        this.value = false,
+        this.priority = false,
+        this.notes = '',
         this._deviceToken = '',
         this._tags = [
           Tag('Wichtig', '0xffff4081', false),
@@ -39,27 +39,25 @@ class Todo {
         ];
 
   Todo.fromDocument(DocumentSnapshot snapshot)
-      : this._id = snapshot.data()['id'],
-        this._deviceToken = snapshot.data()['deviceToken'],
-        this._createdAt = snapshot.data()['createdAt'] != null
-            ? snapshot.data()['createdAt'].toDate()
+      : this._id = (snapshot.data() as Map)['id'],
+        this._deviceToken = (snapshot.data() as Map)['deviceToken'],
+        this._createdAt = (snapshot.data() as Map)['createdAt'] != null
+            ? (snapshot.data() as Map)['createdAt'].toDate()
             : null,
-        this._list = snapshot.data()['list'] {
-    this._title = snapshot.data()['title'];
-    this._dueDate = snapshot.data()['dueDate'] != null
-        ? snapshot.data()['dueDate'].toDate()
+        this._list = (snapshot.data() as Map)['list'],
+        this.value = (snapshot.data() as Map)['value'],
+        this._title = (snapshot.data() as Map)['title'],
+        this.priority = (snapshot.data() as Map)['priority'],
+        this._index = (snapshot.data() as Map)['index'] {
+    this.dueDate = (snapshot.data() as Map)['dueDate'] != null
+        ? (snapshot.data() as Map)['dueDate'].toDate()
         : null;
-    this._reminderDate = snapshot.data()['reminderDate'] != null
-        ? snapshot.data()['reminderDate'].toDate()
+    this.reminderDate = (snapshot.data() as Map)['reminderDate'] != null
+        ? (snapshot.data() as Map)['reminderDate'].toDate()
         : null;
-    this._value = snapshot.data()['value'];
-    this._priority = snapshot.data()['priority'];
-    this._notes = snapshot.data()['notes'];
-    snapshot
-        .data()['tags']
-        .forEach((tag) => {this._tags.add(Tag.fromDocument(tag))});
-    this.gotFiles = snapshot.data()['gotFiles'];
-    this._index = snapshot.data()['index'];
+    this.notes = (snapshot.data() as Map)['notes'];
+    (snapshot.data() as Map)['tags'].forEach((tag) => {this._tags.add(Tag.fromDocument(tag))});
+    this.gotFiles = (snapshot.data() as Map)['gotFiles'];
   }
 
   Future<Map<String, dynamic>> toDocument() async {
@@ -99,21 +97,15 @@ class Todo {
 
   String get id => _id;
   String get title => _title;
-  DateTime get dueDate => _dueDate;
-  DateTime get reminderDate => _reminderDate;
   DateTime get createdAt => _createdAt;
-  bool get value => _value;
-  bool get priority => _priority;
-  String get notes => _notes;
   String get deviceToken => _deviceToken;
-  bool get hasDueDate => _dueDate != null;
-  bool get hasReminderDate => _reminderDate != null;
-  bool get hasNotes => _notes != null && _notes != '';
-  bool get hasFiles => _files.isNotEmpty;
+  bool get hasDueDate => dueDate != null;
+  bool get hasReminderDate => reminderDate != null;
+  bool get hasNotes => notes != null && notes != '';
+  bool get hasFiles => files.isNotEmpty;
   String get list => _list;
   List<Tag> get tags => _tags;
   List<Tag> get activeTags => _tags.where((tag) => tag.active == true).toList();
-  List<File> get files => _files;
   int get index => _index;
 
   dynamic get(String property) {
@@ -129,16 +121,4 @@ class Todo {
       _title = value;
     }
   }
-
-  set files(List<File> value) => _files = value;
-
-  set dueDate(DateTime value) => _dueDate = value;
-
-  set reminderDate(DateTime value) => _reminderDate = value;
-
-  set value(bool value) => _value = value;
-
-  set priority(bool value) => _priority = value;
-
-  set notes(String value) => _notes = value;
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DeleteOrDoneSection extends StatelessWidget {
-  final Function delete;
-  final Function toggleDone;
+  final Function? delete;
+  final Function? toggleDone;
   DeleteOrDoneSection({this.delete, this.toggleDone});
 
   createDeleteDialog(BuildContext context) {
@@ -20,12 +20,15 @@ class DeleteOrDoneSection extends StatelessWidget {
             actions: <Widget>[
               Container(
                 margin: EdgeInsets.fromLTRB(0, 0, screenWidth * 0.037, 0),
-                child: FlatButton(
-                  splashColor: Colors.transparent,
+                child: TextButton(
+                  style: ButtonStyle(
+                    splashFactory: NoSplash.splashFactory,
+                    overlayColor: MaterialStateProperty.all(Colors.transparent),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
-                    delete();
+                    delete!();
                   },
                   child: Text(
                     'Löschen',
@@ -54,7 +57,7 @@ class DeleteOrDoneSection extends StatelessWidget {
             Expanded(
               child: Container(
                 height: screenHeight * 0.08,
-                child: FlatButton.icon(
+                child: TextButton.icon(
                   icon: Icon(
                     Icons.cancel_rounded,
                     color: Colors.black54,
@@ -82,7 +85,7 @@ class DeleteOrDoneSection extends StatelessWidget {
             Expanded(
               child: Container(
                 height: screenHeight * 0.08,
-                child: FlatButton.icon(
+                child: TextButton.icon(
                   icon: Icon(
                     Icons.check_circle,
                     color: Colors.lightBlue,
@@ -97,7 +100,7 @@ class DeleteOrDoneSection extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    toggleDone();
+                    toggleDone!();
                   },
                 ),
               ),

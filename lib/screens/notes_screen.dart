@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:todoapp/widgets/scroll_behavior.dart';
 
 class NotesScreen extends StatefulWidget {
-  final Map data;
+  final Map? data;
   NotesScreen(this.data);
 
   @override
@@ -14,26 +14,26 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  bool _showImg;
+  late bool _showImg;
 
   @override
   void initState() {
     super.initState();
-    if (widget.data['todo'].notes == null || widget.data['todo'].notes == '') {
+    if (widget.data!['todo'].notes == null || widget.data!['todo'].notes == '') {
       _showImg = true;
     } else {
       _showImg = false;
-      _controller.text = widget.data['todo'].notes;
+      _controller.text = widget.data!['todo'].notes;
     }
 
-    KeyboardVisibilityNotification().addNewListener(
-      onHide: () {
+    KeyboardVisibilityController().onChange.listen((bool visible) {
+      if(!visible) {
         _focusNode.unfocus();
-        widget.data['todo'].notes = _controller.text;
-        widget.data['todoService'].updateTodo(widget.data['todo']);
+        widget.data!['todo'].notes = _controller.text;
+        widget.data!['todoService'].updateTodo(widget.data!['todo']);
         if (_controller.text.length < 1) setState(() => _showImg = true);
-      },
-    );
+      }
+    });
   }
 
   @override
@@ -56,7 +56,7 @@ class _NotesScreenState extends State<NotesScreen> {
           ),
           iconTheme: IconThemeData(color: Colors.black),
           title: Text(
-            widget.data['todo'].title,
+            widget.data!['todo'].title,
             style: TextStyle(
               color: Colors.black,
               fontSize: 17,

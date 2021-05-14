@@ -4,7 +4,7 @@ import '../models/user.dart';
 import '../services/auth_service.dart';
 
 class SocialLoginSection extends StatefulWidget {
-  final Function _toggleView;
+  final Function? _toggleView;
   final String _description;
   final String _text;
 
@@ -71,13 +71,16 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
               color: Colors.black,
             ),
           ),
-          child: FlatButton(
+          child: TextButton(
             onPressed: () async {
-              User user = await _authService.googleSignIn();
+              User? user = await _authService.googleSignIn();
               if (user == null) {
                 print('Login failed!');
               }
             },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.black)
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -104,14 +107,16 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
           margin: EdgeInsets.only(top: screenHeight * 0.03),
           height: screenHeight * 0.0625,
           width: screenWidth * 0.8,
-          child: FlatButton(
+          child: TextButton(
             onPressed: () async {
-              User user = await _authService.twitterSignIn();
+              User? user = await _authService.twitterSignIn();
               if (user == null) {
                 print('Login failed!');
               }
             },
-            color: Color(0xFF00acee),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Color(0xFF00acee))
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -155,7 +160,7 @@ class _SocialLoginSectionState extends State<SocialLoginSection> {
               ),
               SizedBox(width: screenWidth * 0.03),
               GestureDetector(
-                onTap: widget._toggleView,
+                onTap: widget._toggleView as void Function()?,
                 child: Text(
                   widget._text,
                   style: TextStyle(

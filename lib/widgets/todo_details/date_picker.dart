@@ -6,8 +6,8 @@ import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/models/todo.dart';
 
 class CustomDatePicker extends StatefulWidget {
-  final Todo todo;
-  final TodoService todoService;
+  final Todo? todo;
+  final TodoService? todoService;
 
   CustomDatePicker({this.todo, this.todoService});
 
@@ -18,8 +18,8 @@ class CustomDatePicker extends StatefulWidget {
 class _CustomDatePickerState extends State<CustomDatePicker> {
   final DateFormat _format = DateFormat('EE, d. MMMM');
 
-  Todo todo;
-  DateTime _dateTime;
+  Todo? todo;
+  DateTime? _dateTime;
 
   @override
   void initState() {
@@ -27,16 +27,16 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     todo = widget.todo;
     Intl.defaultLocale = 'de_DE';
     initializeDateFormatting('de_DE');
-    if (todo.dueDate != null) {
-      _dateTime = todo.dueDate;
+    if (todo!.dueDate != null) {
+      _dateTime = todo!.dueDate;
     }
   }
 
   void _removeDueDate() {
     setState(() {
       _dateTime = null;
-      todo.dueDate = _dateTime;
-      widget.todoService.updateTodo(todo);
+      todo!.dueDate = _dateTime;
+      widget.todoService!.updateTodo(todo!);
     });
   }
 
@@ -54,12 +54,12 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           height: screenHeight * 0.09,
           color: Colors.grey[100],
           child: ButtonTheme(
-            child: FlatButton(
+            child: TextButton(
               onPressed: () {
                 showDatePicker(
                   helpText: 'Datum auswählen',
                   context: context,
-                  initialDate: _dateTime == null ? DateTime.now() : _dateTime,
+                  initialDate: _dateTime == null ? DateTime.now() : _dateTime!,
                   firstDate: DateTime(2003),
                   lastDate: DateTime(2119),
                 ).then((value) {
@@ -72,10 +72,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     ).then((value) {
                       if (value != null) {
                         setState(() {
-                          _dateTime = DateTime(_dateTime.year, _dateTime.month,
-                              _dateTime.day, value.hour, value.minute);
-                          todo.dueDate = _dateTime;
-                          widget.todoService.updateTodo(todo);
+                          _dateTime = DateTime(_dateTime!.year, _dateTime!.month,
+                              _dateTime!.day, value.hour, value.minute);
+                          todo!.dueDate = _dateTime;
+                          widget.todoService!.updateTodo(todo!);
                         });
                       }
                     });
@@ -93,8 +93,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                       : Icon(
                           Icons.date_range,
                           size: 31,
-                          color: _dateTime.day == DateTime.now().day - 1 ||
-                                  _dateTime.day < DateTime.now().day - 1
+                          color: _dateTime!.day == DateTime.now().day - 1 ||
+                                  _dateTime!.day < DateTime.now().day - 1
                               ? Colors.red
                               : Colors.lightBlue,
                         ),
@@ -120,22 +120,22 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _format.format(_dateTime) ==
+                                _format.format(_dateTime!) ==
                                         _format.format(DateTime.now())
                                     ? 'Fällig Heute'
-                                    : _dateTime.day == DateTime.now().day + 1
+                                    : _dateTime!.day == DateTime.now().day + 1
                                         ? 'Fällig Morgen'
-                                        : _dateTime.day ==
+                                        : _dateTime!.day ==
                                                 DateTime.now().day - 1
                                             ? 'Fällig Gestern'
                                             : 'Fällig ' +
                                                 _format
-                                                    .format(_dateTime)
+                                                    .format(_dateTime!)
                                                     .toString(),
                                 style: TextStyle(
-                                  color: _dateTime.day ==
+                                  color: _dateTime!.day ==
                                               DateTime.now().day - 1 ||
-                                          _dateTime.day < DateTime.now().day - 1
+                                          _dateTime!.day < DateTime.now().day - 1
                                       ? Colors.red
                                       : Colors.lightBlue,
                                   fontSize: 16,
@@ -146,7 +146,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                               Container(
                                 margin: const EdgeInsets.only(left: 0.5),
                                 child: Text(
-                                  TimeOfDay(hour: _dateTime.hour, minute: _dateTime.minute).format(context) + ' Uhr',
+                                  TimeOfDay(hour: _dateTime!.hour, minute: _dateTime!.minute).format(context) + ' Uhr',
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 13,

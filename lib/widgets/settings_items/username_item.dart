@@ -4,7 +4,7 @@ import 'package:todoapp/services/database_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class UsernameItem extends StatefulWidget {
-  final String uid;
+  final String? uid;
 
   UsernameItem(this.uid);
 
@@ -14,7 +14,7 @@ class UsernameItem extends StatefulWidget {
 
 class _UsernameItemState extends State<UsernameItem> {
   FocusNode focus = FocusNode();
-  String username;
+  String? username;
   bool loading = true;
 
   @override
@@ -25,8 +25,8 @@ class _UsernameItemState extends State<UsernameItem> {
 
   Future<void> initialize() async {
     DocumentSnapshot userData = await DatabaseService(widget.uid).getUserData();
-    if (userData.data != null) {
-      username = userData.data()['username'];
+    if (userData.data() != null) {
+      username = (userData.data() as Map)['username'];
       setState(() {
         loading = false;
       });
@@ -96,9 +96,9 @@ class _UsernameItemState extends State<UsernameItem> {
                       child: TextField(
                         controller:
                             TextEditingController.fromValue(TextEditingValue(
-                          text: username,
+                          text: username!,
                           selection:
-                              TextSelection.collapsed(offset: username.length),
+                              TextSelection.collapsed(offset: username!.length),
                         )),
                         focusNode: focus,
                         decoration: InputDecoration(

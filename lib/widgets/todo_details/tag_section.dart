@@ -2,15 +2,15 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:todoapp/models/todo.dart';
 import 'package:todoapp/services/todo_service.dart';
 import 'package:todoapp/widgets/scroll_behavior.dart';
 import 'package:todoapp/widgets/todo_details/tag.dart';
 
 class TagSection extends StatefulWidget {
-  final Todo todo;
-  final TodoService todoService;
+  final Todo? todo;
+  final TodoService? todoService;
 
   TagSection({this.todo, this.todoService});
 
@@ -19,19 +19,18 @@ class TagSection extends StatefulWidget {
 }
 
 class _TagSectionState extends State<TagSection> {
-  final KeyboardVisibilityNotification keyboard =
-      KeyboardVisibilityNotification();
-
   @override
   void initState() {
     super.initState();
-    keyboard.addNewListener(onHide: () {
-      setState(() {
-        for (var tag in widget.todo.tags) {
-          tag.editing = false;
-          tag.focusNode.unfocus();
-        }
-      });
+    KeyboardVisibilityController().onChange.listen((bool visible) {
+      if (!visible) {
+        setState(() {
+          for (var tag in widget.todo!.tags) {
+            tag.editing = false;
+            tag.focusNode!.unfocus();
+          }
+        });
+      }
     });
   }
 
@@ -72,7 +71,7 @@ class _TagSectionState extends State<TagSection> {
                           ),
                         ),
                         SizedBox(height: 10),
-                        for (var tag in widget.todo.tags)
+                        for (var tag in widget.todo!.tags)
                           Container(
                             color: Color(int.parse(tag.colorString)),
                             child: ListTile(
@@ -87,11 +86,11 @@ class _TagSectionState extends State<TagSection> {
                                   onChanged: (val) async {
                                     setState(() {
                                       update(() {
-                                        tag.active = val;
+                                        tag.active = val!;
                                       });
                                     });
-                                    await widget.todoService
-                                        .updateTodo(widget.todo);
+                                    await widget.todoService!
+                                        .updateTodo(widget.todo!);
                                   },
                                   value: tag.active,
                                 ),
@@ -103,8 +102,8 @@ class _TagSectionState extends State<TagSection> {
                                       tag.active = !tag.active;
                                     });
                                   });
-                                  await widget.todoService
-                                      .updateTodo(widget.todo);
+                                  await widget.todoService!
+                                      .updateTodo(widget.todo!);
                                 },
                                 child: TextFormField(
                                   focusNode: tag.focusNode,
@@ -124,11 +123,11 @@ class _TagSectionState extends State<TagSection> {
                                       update(() {
                                         tag.name = value;
                                         tag.editing = false;
-                                        tag.focusNode.unfocus();
+                                        tag.focusNode!.unfocus();
                                       });
                                     });
-                                    await widget.todoService
-                                        .updateTodo(widget.todo);
+                                    await widget.todoService!
+                                        .updateTodo(widget.todo!);
                                   },
                                 ),
                               ),
@@ -142,7 +141,7 @@ class _TagSectionState extends State<TagSection> {
                                   setState(() {
                                     update(() {
                                       tag.editing = true;
-                                      tag.focusNode.requestFocus();
+                                      tag.focusNode!.requestFocus();
                                     });
                                   });
                                 },
@@ -163,9 +162,9 @@ class _TagSectionState extends State<TagSection> {
 
   void removeTag(String name) async {
     setState(() {
-      widget.todo.tags.where((tag) => tag.name == name).single.active = false;
+      widget.todo!.tags.where((tag) => tag.name == name).single.active = false;
     });
-    await widget.todoService.updateTodo(widget.todo);
+    await widget.todoService!.updateTodo(widget.todo!);
   }
 
   @override
@@ -187,11 +186,11 @@ class _TagSectionState extends State<TagSection> {
             margin: EdgeInsets.only(top: 12),
             child: Wrap(
               children: [
-                for (var tag in widget.todo.tags)
+                for (var tag in widget.todo!.tags)
                   if (tag.active)
                     Tag(tag.name, Color(int.parse(tag.colorString)),
                         () => removeTag(tag.name)),
-                widget.todo.tags.every((tag) => tag.active == true)
+                widget.todo!.tags.every((tag) => tag.active == true)
                     ? Container()
                     : Container(
                         margin: EdgeInsets.fromLTRB(0, 1.25, 0, 9),

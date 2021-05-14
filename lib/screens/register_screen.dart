@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:todoapp/fieldtype.dart';
 import 'package:todoapp/widgets/scroll_behavior.dart';
 
@@ -9,7 +9,7 @@ import '../widgets/social_login.dart';
 import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final Function toggleView;
+  final Function? toggleView;
   RegisterScreen({this.toggleView});
 
   @override
@@ -39,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    KeyboardVisibilityNotification().addNewListener(onChange: (visible) {
+    KeyboardVisibilityController().onChange.listen((bool visible) {
       if (!visible) {
         _usernameNode.unfocus();
         _emailNode.unfocus();
@@ -195,7 +195,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
-                            child: FlatButton(
+                            child: TextButton(
+                              style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith((states) {
+                                if(states.contains(MaterialState.disabled)) {                                  
+                                  return Colors.grey[100];
+                                }
+                                return Colors.transparent;
+                              })),
                               onPressed: _enableBtn
                                   ? () async {
                                       setState(() {
@@ -214,9 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         });
                                       }
                                     }
-                                  : null,
-                              disabledColor: Colors.grey[100],
-                              color: Colors.transparent,
+                                  : null,                           
                               child: Text(
                                 btnText,
                                 style: TextStyle(
