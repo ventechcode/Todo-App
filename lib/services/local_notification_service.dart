@@ -53,7 +53,8 @@ class LocalNotificationService {
       'CHANNEL_DESCRIPTION',
       importance: Importance.max,
       priority: Priority.high,
-      playSound: true      
+      playSound: true,     
+      enableVibration: true
     );
     IOSNotificationDetails iosNotificationDetails = IOSNotificationDetails();
     NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails, iOS: iosNotificationDetails);

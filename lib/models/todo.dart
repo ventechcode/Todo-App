@@ -20,9 +20,9 @@ class Todo {
   List<Tag> _tags = [];
   List<File> files = [];
   bool gotFiles = false;
-  int _index;
+  int index;
 
-  Todo(this._title, this._list, this._index)
+  Todo(this._title, this._list, this.index)
       : this._id = Uuid().v4(),
         this._createdAt = DateTime.now(),
         this.value = false,
@@ -48,7 +48,7 @@ class Todo {
         this.value = (snapshot.data() as Map)['value'],
         this._title = (snapshot.data() as Map)['title'],
         this.priority = (snapshot.data() as Map)['priority'],
-        this._index = (snapshot.data() as Map)['index'] {
+        this.index = (snapshot.data() as Map)['index'] {
     this.dueDate = (snapshot.data() as Map)['dueDate'] != null
         ? (snapshot.data() as Map)['dueDate'].toDate()
         : null;
@@ -106,12 +106,14 @@ class Todo {
   String get list => _list;
   List<Tag> get tags => _tags;
   List<Tag> get activeTags => _tags.where((tag) => tag.active == true).toList();
-  int get index => _index;
 
   dynamic get(String property) {
     if(this.toMap().containsKey(property)) {
       if(property == 'value') return value ? 1 : 0;
-      return this.toMap()[property];
+      else if(property == 'priority') return priority ? 1 : 0;
+      else if(property == 'title') return title.toLowerCase();
+      else if(property == 'dueDate') return dueDate;
+      else return createdAt;
     }
     throw ArgumentError('Property $property not found!');
   }

@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import './models/user.dart';
 import './screens/wrapper.dart';
 import './services/auth_service.dart';
-import 'screens/detail_screen.dart';
+import './screens/detail_screen.dart';
 import './screens/notes_screen.dart';
 import './screens/settings_screen.dart';
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Todo-App',
         theme: ThemeData(
-          canvasColor: Colors.transparent,
+          canvasColor: Colors.transparent,          
         ),
         debugShowCheckedModeBanner: false,
         initialRoute: '/',

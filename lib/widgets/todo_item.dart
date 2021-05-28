@@ -30,11 +30,13 @@ class TodoItem extends StatelessWidget {
             key: key!,
             onDismissed: (_) => delete!(),
             child: Card(
+              clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              elevation: 1.5,
+              elevation: 2,
               margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
               child: ListTile(
+                key: key,
                 dense: true,
                 contentPadding: EdgeInsets.symmetric(vertical: 4),
                 horizontalTitleGap: 8,
@@ -42,7 +44,7 @@ class TodoItem extends StatelessWidget {
                 leading: Container(
                   margin: const EdgeInsets.only(left: 8),
                   child: Transform.scale(
-                    scale: 1.36,
+                    scale: 1.3,
                     child: Checkbox(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       value: true,
@@ -57,6 +59,8 @@ class TodoItem extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                     decoration: TextDecoration.lineThrough,
+                    decorationThickness: 1.36,
+                    decorationColor: Colors.grey[800],
                     color: Colors.grey,
                   ),
                 ),
@@ -75,17 +79,17 @@ class TodoItem extends StatelessWidget {
               ),
             ),
           )
-        : Container(
+        : Container(       
             child: Card(
               clipBehavior: Clip.antiAlias,
               key: key,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               margin: EdgeInsets.fromLTRB(7, 4, 7, 4),
-              elevation: 1.5,
+              elevation: 2,
               child: Container(
                 child: ListTile(
-                  key: ValueKey(todo!.id),
+                  key: key,
                   dense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 4),
                   horizontalTitleGap: 8,
@@ -99,18 +103,19 @@ class TodoItem extends StatelessWidget {
                   leading: Container(
                     margin: const EdgeInsets.only(left: 8),
                     child: Transform.scale(
-                      scale: 1.36,
-                      child: Checkbox(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        value: false,
-                        fillColor: MaterialStateProperty.resolveWith(
-                            (states) => Colors.grey[600]),
-                        onChanged: (_) => toggleDone!(),
-                        activeColor: Colors.lightBlue,
-                      ),
+                      scale: 1.3,
+                      child: Checkbox(                       
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          value: false,
+                          fillColor: MaterialStateProperty.resolveWith(
+                              (states) => Colors.grey),
+                          onChanged: (_) => toggleDone!(),
+                          activeColor: Colors.lightBlue,
+                        ),
                     ),
                   ),
                   title: ListView(
+                    padding: EdgeInsets.all(0),
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
                     children: [
@@ -161,12 +166,9 @@ class TodoItem extends StatelessWidget {
                               child: Icon(
                                 Icons.calendar_today_rounded,
                                 size: 15,
-                                color: todo!.dueDate!.day ==
-                                            DateTime.now().day - 1 ||
-                                        todo!.dueDate!.day <
-                                            DateTime.now().day - 1
-                                    ? Colors.red
-                                    : Colors.grey[700],
+                                color: todo!.dueDate!.isBefore(DateTime.now())
+                                      ? Colors.red
+                                      : Colors.grey[700],
                               ),
                             ),
                           if (todo!.hasDueDate)
@@ -203,7 +205,7 @@ class TodoItem extends StatelessWidget {
                                                 ' Uhr'
                                             : _format
                                                     .format(todo!.dueDate!)
-                                                    .toString() +
+                                                    .toString() + ', ' +
                                                 TimeOfDay(
                                                         hour:
                                                             todo!.dueDate!.hour,
@@ -212,10 +214,7 @@ class TodoItem extends StatelessWidget {
                                                     .format(context) +
                                                 ' Uhr',
                                 style: TextStyle(
-                                  color: todo!.dueDate!.day ==
-                                              DateTime.now().day - 1 ||
-                                          todo!.dueDate!.day <
-                                              DateTime.now().day - 1
+                                  color: todo!.dueDate!.isBefore(DateTime.now())
                                       ? Colors.red
                                       : Colors.grey[700],
                                   fontSize: 11,

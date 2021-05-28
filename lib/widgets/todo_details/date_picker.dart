@@ -72,8 +72,12 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     ).then((value) {
                       if (value != null) {
                         setState(() {
-                          _dateTime = DateTime(_dateTime!.year, _dateTime!.month,
-                              _dateTime!.day, value.hour, value.minute);
+                          _dateTime = DateTime(
+                              _dateTime!.year,
+                              _dateTime!.month,
+                              _dateTime!.day,
+                              value.hour,
+                              value.minute);
                           todo!.dueDate = _dateTime;
                           widget.todoService!.updateTodo(todo!);
                         });
@@ -93,8 +97,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                       : Icon(
                           Icons.date_range,
                           size: 31,
-                          color: _dateTime!.day == DateTime.now().day - 1 ||
-                                  _dateTime!.day < DateTime.now().day - 1
+                          color: todo!.dueDate!.isBefore(DateTime.now())
                               ? Colors.red
                               : Colors.lightBlue,
                         ),
@@ -133,9 +136,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                                                     .format(_dateTime!)
                                                     .toString(),
                                 style: TextStyle(
-                                  color: _dateTime!.day ==
-                                              DateTime.now().day - 1 ||
-                                          _dateTime!.day < DateTime.now().day - 1
+                                  color: todo!.dueDate!.isBefore(DateTime.now())
                                       ? Colors.red
                                       : Colors.lightBlue,
                                   fontSize: 16,
@@ -146,7 +147,11 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                               Container(
                                 margin: const EdgeInsets.only(left: 0.5),
                                 child: Text(
-                                  TimeOfDay(hour: _dateTime!.hour, minute: _dateTime!.minute).format(context) + ' Uhr',
+                                  TimeOfDay(
+                                              hour: _dateTime!.hour,
+                                              minute: _dateTime!.minute)
+                                          .format(context) +
+                                      ' Uhr',
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 13,

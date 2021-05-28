@@ -20,7 +20,8 @@ class DetailScreen extends StatelessWidget {
     final Todo todo = data['todo'];
     final Function? delete = data['delete'];
     final Function? toggleDone = data['toggleDone'];
-    final User user = Provider.of<User>(context);
+    User? user = Provider.of<User?>(context);
+    final TodoService todoService = TodoService(user: user, list: todo.list);
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -50,29 +51,29 @@ class DetailScreen extends StatelessWidget {
                       children: [
                         TodoTitle(
                           todo: todo,
-                          uid: user.uid,
-                          todoService: TodoService(user: user, list: todo.list),
+                          uid: user?.uid,
+                          todoService: todoService,
                         ),
                         ReminderPicker(
                           todo: todo,
-                          uid: user.uid,
-                          todoService: TodoService(user: user, list: todo.list),
+                          uid: user?.uid,
+                          todoService: todoService,
                         ),
                         CustomDatePicker(
                           todo: todo,
-                          todoService: TodoService(user: user, list: todo.list),
+                          todoService: todoService,
                         ),
                         NotesSection(
                           todo: todo,
-                          todoService: TodoService(user: user, list: todo.list),
+                          todoService: todoService,
                         ),
                         AttachSection(
                           todo: todo,
-                          todoService: TodoService(user: user, list: todo.list),
+                          todoService: todoService,
                         ),
                         TagSection(
                           todo: todo,
-                          todoService: TodoService(user: user, list: todo.list),
+                          todoService: todoService,
                         ),
                         TimestampSection(
                           timestamp: todo.createdAt,
