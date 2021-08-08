@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
+import 'package:todoapp/models/todo_list.dart';
 
 import '../models/user.dart';
 import '../models/todo.dart';
@@ -10,11 +11,11 @@ import '../models/todo.dart';
 /// This class handles backend operations for Todo-Items.
 class TodoService {
   final User? user;
-  final String? list;
+  final TodoList? list;
   late CollectionReference _todos;
 
   TodoService({this.user, this.list}) {
-    String collectionPath = 'users/${user!.uid}/$list';
+    String collectionPath = 'users/${user!.uid}/lists/${list!.id}/todos';
     _todos = FirebaseFirestore.instance.collection(collectionPath);
   }
 

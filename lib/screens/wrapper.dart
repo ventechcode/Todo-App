@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:todoapp/models/todo_list.dart';
 
 import '../models/user.dart';
 import '../screens/authenticate.dart';
@@ -12,7 +13,7 @@ class Wrapper extends StatelessWidget {
     if(user == null) {
       return Authenticate();
     } else {
-      return TaskScreen(user, 'Alle Aufgaben');
+      return TaskScreen(user, TodoList.static('Alle Aufgaben'));
     }
   }
 }

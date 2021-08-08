@@ -9,8 +9,7 @@ class Todo {
   final String _id;
   final DateTime _createdAt;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final String _deviceToken;
-  final String _list;
+  final String _deviceToken;        
   String _title;
   DateTime? dueDate;
   DateTime? reminderDate;
@@ -22,7 +21,7 @@ class Todo {
   bool gotFiles = false;
   int index;
 
-  Todo(this._title, this._list, this.index)
+  Todo(this._title, this.index)
       : this._id = Uuid().v4(),
         this._createdAt = DateTime.now(),
         this.value = false,
@@ -43,12 +42,11 @@ class Todo {
         this._deviceToken = (snapshot.data() as Map)['deviceToken'],
         this._createdAt = (snapshot.data() as Map)['createdAt'] != null
             ? (snapshot.data() as Map)['createdAt'].toDate()
-            : null,
-        this._list = (snapshot.data() as Map)['list'],
+            : null,       
         this.value = (snapshot.data() as Map)['value'],
         this._title = (snapshot.data() as Map)['title'],
         this.priority = (snapshot.data() as Map)['priority'],
-        this.index = (snapshot.data() as Map)['index'] {
+        this.index = (snapshot.data() as Map)['index']  {
     this.dueDate = (snapshot.data() as Map)['dueDate'] != null
         ? (snapshot.data() as Map)['dueDate'].toDate()
         : null;
@@ -63,7 +61,6 @@ class Todo {
   Future<Map<String, dynamic>> toDocument() async {
     return {
       'id': id,
-      'list': list,
       'title': title,
       'createdAt': Timestamp.fromDate(createdAt),
       'priority': priority,
@@ -81,7 +78,6 @@ class Todo {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'list': list,
       'title': title,
       'createdAt': Timestamp.fromDate(createdAt),
       'priority': priority,
@@ -103,7 +99,6 @@ class Todo {
   bool get hasReminderDate => reminderDate != null;
   bool get hasNotes => notes != null && notes != '';
   bool get hasFiles => files.isNotEmpty;
-  String get list => _list;
   List<Tag> get tags => _tags;
   List<Tag> get activeTags => _tags.where((tag) => tag.active == true).toList();
 

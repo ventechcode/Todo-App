@@ -13,8 +13,8 @@ class User {
     this.userName,
   });
 
-  User.fromFirebaseUser(auth.User firebaseUser)
-      : this.uid = firebaseUser.uid,
+  User.fromFirebaseUser(auth.User? firebaseUser)
+      : this.uid = firebaseUser!.uid,
         this.email = firebaseUser.email,
         this.userName = firebaseUser.displayName;
 

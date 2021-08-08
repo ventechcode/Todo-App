@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/models/todo.dart';
+import 'package:todoapp/services/todo_service.dart';
 
 class TodoItem extends StatelessWidget {
   final Todo? todo;
@@ -13,12 +14,14 @@ class TodoItem extends StatelessWidget {
   final Function? delete;
   final Function? toggleDone;
   final ValueKey? key;
+  final TodoService? todoService;
 
   TodoItem({
     this.delete,
     this.toggleDone,
     this.key,
     this.todo,
+    this.todoService,
   }) : super(key: key);
 
   @override
@@ -97,7 +100,8 @@ class TodoItem extends StatelessWidget {
                     Navigator.of(context).pushNamed('/details', arguments: {
                       'todo': todo,
                       'delete': () => delete!(),
-                      'toggleDone': () => toggleDone!()
+                      'toggleDone': () => toggleDone!(),
+                      'todoService': todoService
                     });
                   },
                   leading: Container(

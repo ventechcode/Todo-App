@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/widgets/sidebar/list_section.dart';
 
 import '../../widgets/sidebar/profile_section.dart';
 import '../../models/user.dart';
@@ -18,10 +19,8 @@ class Sidebar extends StatelessWidget {
             height: screenHeight * 0.13,
             color: Colors.grey[100],
             child: ProfileSection(user),
-          ),
-          Container(
-            color: Colors.white,
-          ),
+          ),  
+          ListSection(user),       
         ],
       ),
     );

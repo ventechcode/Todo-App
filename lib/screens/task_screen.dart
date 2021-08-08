@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:todoapp/models/choice.dart';
 import 'package:todoapp/models/sorting_criteria.dart';
+import 'package:todoapp/models/todo_list.dart';
 
 import '../models/todo.dart';
 import '../models/user.dart';
@@ -14,7 +15,7 @@ import '../services/local_notification_service.dart';
 
 class TaskScreen extends StatefulWidget {
   final User user;
-  final String list;
+  final TodoList list;
 
   TaskScreen(this.user, this.list);
 
@@ -24,70 +25,51 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   late TodoService _todoService;
+
   TextEditingController _controller = TextEditingController();
   FocusNode _inputField = FocusNode();
   bool _activateBtn = false;
-  List<DocumentSnapshot>? _docs;
-  SortingCriteria? currentSortingCriteria;
 
-  List<Choice> choices = [
-    Choice(
-      text: 'Sortieren nach',
-      icon: Icon(Icons.sort_rounded),
-    ),
-    Choice(
-      text: 'Liste umbenennen',
-      icon: Icon(Icons.edit_outlined),
-    ),
-    Choice(
-      text: 'Liste löschen',
-      icon: Icon(Icons.delete_outline_rounded),
-    ),
-  ];
+  List<DocumentSnapshot>? _docs;
+
+  List<Choice> choices = [];
+
+  Choice sortingChoice =
+      Choice(text: 'Sortieren nach', icon: Icon(Icons.sort_rounded));
+  Choice renameChoice =
+      Choice(text: 'Liste umbenennen', icon: Icon(Icons.edit_outlined));
+  Choice deleteChoice =
+      Choice(text: 'Liste löschen', icon: Icon(Icons.delete_outline_rounded));
+
+  SortingCriteria? currentSortingCriteria;
 
   List<SortingCriteria> sortingCriterias = [
     SortingCriteria(
       'Wichtigkeit',
       'priority',
       false,
-      Icon(
-        Icons.star_border_rounded,
-        size: 26,
-        color: Colors.grey[600],
-      ),
+      Icons.star_border_rounded,
       'Nach Wichtigkeit sortiert',
     ),
     SortingCriteria(
       'Fälligkeitsdatum',
       'dueDate',
       true,
-      Icon(
-        Icons.calendar_today_rounded,
-        size: 26,
-        color: Colors.grey[600],
-      ),
+      Icons.calendar_today_rounded,
       'Nach Fälligkeitsdatum sortiert',
     ),
     SortingCriteria(
       'Alphabetisch',
       'title',
       true,
-      Icon(
-        Icons.sort_by_alpha_rounded,
-        size: 26,
-        color: Colors.grey[600],
-      ),
+      Icons.sort_by_alpha_rounded,
       'Alphabetisch sortiert',
     ),
     SortingCriteria(
       'Erstellungsdatum',
       'createdAt',
       false,
-      Icon(
-        Icons.more_time_rounded,
-        size: 26,
-        color: Colors.grey[600],
-      ),
+      Icons.more_time_rounded,
       'Nach Erstellungsdatum sortiert',
     )
   ];
@@ -97,6 +79,10 @@ class _TaskScreenState extends State<TaskScreen> {
     super.initState();
     _inputField.unfocus();
     _todoService = TodoService(user: widget.user, list: widget.list);
+
+    choices.add(sortingChoice);
+    choices.add(renameChoice);
+    choices.add(deleteChoice);
 
     localNotificationService.setOnNotificationClick((payload) async {
       List<Todo> todos = _docs!.map((doc) {
@@ -115,7 +101,7 @@ class _TaskScreenState extends State<TaskScreen> {
 
   void addTodo(String title) {
     int index = _docs!.length;
-    _todoService.addTodo(Todo(title, widget.list, index));
+    _todoService.addTodo(Todo(title, index));
   }
 
   void delete(Todo todo) => _todoService.deleteTodo(todo);
@@ -170,33 +156,56 @@ class _TaskScreenState extends State<TaskScreen> {
                   ),
                 ),
                 for (SortingCriteria criteria in sortingCriterias)
-                  Container(
-                    width: screenWidth,
-                    height: screenHeight * 0.0825,
-                    child: TextButton.icon(
-                      style: ButtonStyle(
-                        alignment: Alignment.centerLeft,
-                        overlayColor:
-                            MaterialStateProperty.all(Colors.grey[300]),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          currentSortingCriteria = criteria;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      label: Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Text(
-                          criteria.name,
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                  Row(
+                    children: [
+                      Container(
+                        width: currentSortingCriteria == criteria
+                            ? screenWidth * 0.8
+                            : screenWidth,
+                        height: screenHeight * 0.0825,
+                        child: TextButton.icon(
+                          style: ButtonStyle(
+                            alignment: Alignment.centerLeft,
+                            overlayColor:
+                                MaterialStateProperty.all(Colors.grey[300]),
+                          ),
+                          onPressed: currentSortingCriteria == criteria
+                              ? null
+                              : () {
+                                  setState(() {
+                                    currentSortingCriteria = criteria;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                          label: Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Text(
+                              criteria.name,
+                              style: TextStyle(
+                                color: currentSortingCriteria == criteria
+                                    ? Colors.lightBlue
+                                    : Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          icon: Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Icon(criteria.icon,
+                                size: 26,
+                                color: currentSortingCriteria == criteria
+                                    ? Colors.lightBlue
+                                    : Colors.grey[600]),
+                          ),
                         ),
                       ),
-                      icon: Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: criteria.icon,
-                      ),
-                    ),
+                      if (currentSortingCriteria == criteria)
+                        Container(
+                          margin: EdgeInsets.only(left: screenWidth * 0.06),
+                          child: Icon(Icons.check_rounded,
+                              color: Colors.lightBlue),
+                        ),
+                    ],
                   ),
               ],
             ),
@@ -219,7 +228,7 @@ class _TaskScreenState extends State<TaskScreen> {
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black),
           title: Text(
-            widget.list.toUpperCase(),
+            widget.list.name.toUpperCase(),
             style: TextStyle(
               color: Colors.black,
               fontSize: 17,
@@ -339,11 +348,10 @@ class _TaskScreenState extends State<TaskScreen> {
 
                       if (currentSortingCriteria != null) {
                         if (currentSortingCriteria!.property == 'dueDate') {
-
                           var temp = todos
                               .where((element) => element.dueDate != null)
                               .toList();
-                          
+
                           temp.sort((a, b) {
                             if (a
                                     .get(currentSortingCriteria!.property)
@@ -361,12 +369,11 @@ class _TaskScreenState extends State<TaskScreen> {
                               return currentSortingCriteria!.ascending ? -1 : 1;
                           });
 
-                          for(var todo in temp) {
+                          for (var todo in temp) {
                             todos.remove(todo);
                           }
 
                           todos.insertAll(0, temp);
-                          
                         } else {
                           todos.sort((a, b) {
                             if (a
@@ -407,8 +414,17 @@ class _TaskScreenState extends State<TaskScreen> {
                           delete: () => delete(todo),
                           toggleDone: () => toggleDone(todo),
                           todo: todo,
+                          todoService: _todoService,
                         );
                       }).toList();
+
+                      if (todoItems.isEmpty) {
+                        choices.remove(sortingChoice);
+                      } else if (todoItems.isNotEmpty) {
+                        if (!choices.contains(sortingChoice)) {
+                          choices.insert(0, sortingChoice);
+                        }
+                      }
 
                       return Container(
                         child: ScrollConfiguration(

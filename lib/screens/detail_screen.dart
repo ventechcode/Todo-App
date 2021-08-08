@@ -20,8 +20,8 @@ class DetailScreen extends StatelessWidget {
     final Todo todo = data['todo'];
     final Function? delete = data['delete'];
     final Function? toggleDone = data['toggleDone'];
+    final TodoService? todoService = data['todoService'];
     User? user = Provider.of<User?>(context);
-    final TodoService todoService = TodoService(user: user, list: todo.list);
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
