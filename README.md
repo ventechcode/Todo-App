@@ -1,4 +1,3 @@
 # Todo-App
 
-Todo-App created by Ventech
-
+Old unfinished version of my Todo-App created with Flutter + Firebase
